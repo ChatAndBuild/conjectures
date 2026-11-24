@@ -198,19 +198,140 @@ Under RH, the Riesz function is `O(x^{1/4+ε})` (Riesz, Acta Math. 40 (1916)), a
 Mellin–Barnes contour shifts once #10's `1/ζ` bound exists. They are smoothed by nature, so no
 sharp-cutoff Perron is needed.
 
+## Round 3 (2026-11-24): what riemann-hypothesis proves along the way
+
+Rounds 1 and 2 treated riemann-hypothesis as two theorems. Round 3 read the whole repo and
+inventoried its intermediate lemmas in [`rh-lemmas/`](rh-lemmas/README.md). Three follow-up
+reports matched those lemmas against the Conjecture Atlas and formal-conjectures:
+[analytic](rh-lemmas/targets-analytic.md), [algebraic](rh-lemmas/targets-algebraic.md) and
+[geometry and algebra](rh-lemmas/targets-geometry-algebra.md). They hold the declaration names,
+paths and the full reasoning for every row below.
+
+All of it was read from statements. Nothing was built, and no `#print axioms` was run. The
+first step on any target here is to import the one module it needs and check the statement and
+its axioms. artin-grh PR #11 shows that works: importing a single `GroundTheory` module took
+17 s and 6.6 GB of RAM, not the 93 GB / 19 GB of the full import.
+
+### The filter changes
+
+The round 1 test was "the analytic input is RH for ζ or GRH for Dirichlet L". The repo also
+proves, with no hypothesis, Siegel–Walfisz, Linnik, Brun–Titchmarsh, the large sieve, a
+truncated explicit formula, global class field theory, Chebotarev density, the continuation of
+`dedekindZeta`, and Hironaka in characteristic 0. So a target can now also qualify because its
+missing input is one of those.
+
+**Open decision.** The tier table has no row for a theorem that imports riemann-hypothesis for
+a lemma and never uses RH. Below such targets are written **U₀**: tier U's trust caveat applies
+(untrusted cache, no licence, import only), but no RH hypothesis is discharged. Either add U₀
+to `AGENTS.md` or decide this workspace doesn't take such targets.
+
+### Build once: the GRH `ψ(x,χ)` bound
+
+Under GRH, `|ψ(u,χ) − δ_χ u| ≤ C √u log²(qu)`, uniformly in the modulus `q`, from the repo's
+truncated explicit formula and its zero count in unit windows (both hold for every primitive
+character with one constant, ζ included). Targets 17, 21, 22 and the cheaper forms of #2, #5 and
+#8 all reduce to it. Its constant is existential, so it helps `O(·)` statements and does nothing
+for targets that end in a finite check.
+
+### New candidates
+
+| # | Target | Input from riemann-hypothesis | formal-conjectures statement | Tier | Effort |
+|---|---|---|---|---|---|
+| 17 | Bombieri–Vinogradov, via GRH | GRH, the `ψ(x,χ)` bound | `Wikipedia/ElliottHalberstamConjecture.lean`, `elliott_halberstam.variants.bombieri_vinogradov` | U | M |
+| 18 | Erdős 696 | Siegel–Walfisz, Brun–Titchmarsh, Mertens | `ErdosProblems/696.lean` (solved) | U₀ | M |
+| 19 | Erdős 694 | Linnik, Mertens | `ErdosProblems/694.lean` (solved) | U₀ | S–M |
+| 20 | Erdős 456, Linnik variant | Linnik | `ErdosProblems/456.lean`, `erdos_456.variants.linniks_theorem` | U₀ | S |
+| 21 | Pollack 2017 Thm 1.3 under GRH, then Erdős 1141 | GRH, the `ψ(x,χ)` bound | `ErdosProblems/1141.lean` | U | S–M, plus a port |
+| 22 | Erdős 980, `k = 2`: mean of the least quadratic nonresidue | GRH, the `ψ(x,χ)` bound, ankeny-grh | `ErdosProblems/980.lean`, `erdos_980.variants.erdos_two` | U | M |
+| 23 | Stark–Heegner (class number one), via GRH | GRH, imaginary-quadratic `ζ_K = ζ·L(χ)` | `Wikipedia/ClassNumberProblem.lean`, `variants.imaginary` (solved) | U | M–L |
+| 24 | ERH for every abelian number field | RH, GRH, Kronecker–Weber, `dedekindZeta` continuation | none (formal-conjectures has `DedekindZetaRH` vocabulary only) | U | M–L |
+| 25 | Hironaka's resolution in characteristic 0 | functorial resolution | `Wikipedia/ResolutionOfSingularities.lean`, `resolution_of_singularities_of_charZero` | U₀, or D | S |
+| 26 | Zariski's local uniformisation in characteristic 0 | as 25, plus regular stalks of smooth schemes | `Wikipedia/LocalUniformization.lean` | U₀, or D | M |
+| 27 | Auslander–Reiten over a regular local ring | Serre's theorem on projective dimension | `Paper/AuslanderReiten.lean`, `auslander_reiten.variants.regular_local` | U₀ | S–M |
+| 28 | Cox: `p = x² + ny²` iff `p` splits completely in the Hilbert class field | Hilbert class field ≃ class group, Chebotarev density | none | U₀ | M |
+| 29 | Kummer's criterion, the easy half, and `small_regular_primes` | Stickelberger, Bernoulli/L-value identities | `Wikipedia/RegularPrimes.lean` | U₀ | L |
+| 30 | Littlewood: `π(x;4,3) − π(x;4,1)` changes sign infinitely often | GRH for `χ₄` | `Wikipedia/ChebyshevBias.lean`, `littlewood_mod_four_sign_changes` | U | L |
+| 31 | Titchmarsh divisor problem | #17, Brun–Titchmarsh | none found *(search was rate-limited)* | U | M |
+| 32 | Heilbronn / Siegel: `h(−d) → ∞` | Siegel's theorem, `L(1,χ) = πh/√d` | none | U₀ | M |
+
+Notes on the rows that need one:
+
+- **18, 19.** Complete Apache-2.0 Lean proofs already exist (davidturturean/erdos-696,
+  Shashi456's Erdős 694) resting on three and two axioms. The repo proves those axioms. The
+  work is statement conversion (`ψ`-form Siegel–Walfisz to `π(t;q,a)`, Mertens' second and
+  third theorems from the first, with robin-rh's `mertens_const_eq_gamma`) and a port from Lean
+  v4.27/v4.28.
+- **20** is one lemma. Do it first, as the smoke test for importing a single module.
+- **21.** The unconditional proof needs Burgess, which the repo lacks. The licence of the
+  existing Lean deduction of Erdős 1141 (Jayyhk/erdos-lean) is unchecked.
+- **24** unlocks less than it sounds. Weinberger's Euclidean rings, Bach's class-group
+  generators and Hooley all need non-abelian fields.
+- **25, 26.** [resolutionorg/hironaka](https://github.com/resolutionorg/hironaka) is a separate
+  Apache-2.0 Lean library that proves Hironaka in Mathlib's terms. Its README says it has no
+  `sorry` *(unverified)*. Using it makes both tier D with no riemann-hypothesis import. Neither
+  is a consequence of RH, so decide whether they belong in this workspace.
+- **28, 32** bridge the repo's internal `IsKroneckerChar` / `IsIdealClassPoint` to Mathlib's
+  `classNumber`. 32 is ineffective and gives no finite list.
+
+### Existing targets, re-costed
+
+- **#1 idoneal numbers: a new route with no class number formula and no genus theory.** If `p`
+  is an odd prime, `p ∤ n`, `−n` is a square mod `p` and `p² < n`, then `n = ab + bc + ca` with
+  `0 < a < b < c`, which is formal-conjectures' definition of "not idoneal". Proof: pick `x`
+  with `x² ≡ −n (mod p)` and `0 < x < p/2`, write `n + x² = p·m`, and take `a = x`,
+  `b = p − x`, `c = m − x`; then `(a+b)(a+c) = n + a²` and `m > n/p > p`. Under GRH such a
+  prime exists below `c·log²(4n)`, which leaves a finite check estimated at about `10⁶`
+  *(not sized carefully)*. Still missing: an explicit Bach-style GRH bound for the least prime
+  with `χ_{−4n}(p) = 1`, adapted from ankeny-grh. LLS Thm 1.4 does not serve: its `p ≤ 10⁹`
+  escape clause pushes the finite range to about `10¹⁸`. This revises round 2's suggestion.
+  Statement: `Wikipedia/IdonealCompleteness.lean`, `idoneal_numbers_completeness` (open).
+- **#2, #5:** the `O`-forms `ψ(x) = x + O(√x log² x)` and gaps `O(√p log² p)` are effort S from
+  the `ψ` bound. Schoenfeld's `1/(8π)` and Cramér's `√p log p` are unchanged.
+- **#8 density hypothesis:** effort S. Zero counts in unit windows sum to `N(T) ≪ T log T`,
+  with multiplicity; a bridge to `Complex.zeroCountOn` remains.
+- **#9 Li's criterion:** `Σ 1/|ρ|² < ∞` is covered. "Infinitely many zeros" is still missing.
+- **#10 Mertens function:** M, down from M–L. The repo's truncated Perron kernel is the
+  sharp-cutoff formula this target lacked. The `1/ζ` bound is still ours to prove.
+- **#13:** the class-number step is free (`L(1,χ) = πh/√d` is in the repo, for maximal orders).
+- **Unchanged:** #7 Mills, #11 Nicolas, #12 LLS upgrade and the explicit half of #13. They end
+  in explicit constants, and the repo's constants are existential. #6 ternary Goldbach stays
+  blocked on the minor arcs.
+- **artin-grh:** the repo's `dedekindZeta` continuation discharges `DedekindContinuation` once
+  a strip bound is added. artin-grh PR #11 does this. `HooleyHypothesis` stays, so the result
+  is tier C with no H hypothesis, not tier U.
+
+### Rejected in round 3
+
+- **Catalan / Mihăilescu.** Already proved in Lean 4 (cadamcat/catalan-lean4).
+- **Anything Weil-bound shaped.** `WeilBound` contains no Weil bound, and `EtaleCohomology`
+  states Poincaré duality and the Frobenius weights without proving them.
+- **Unconditional Bombieri–Vinogradov at level 1/2, Vinogradov's three primes, Chowla.** The
+  repo has the large sieve and Siegel–Walfisz, but no Vaughan identity, bilinear estimates or
+  circle method.
+- **Erdős 695, Erdős 980 for general `k`, Erdős–Halberstam proper.** Reasons in the analytic
+  report.
+- **Briançon–Skoda, Serre's dimension inequality, Fujita-type bounds.** Each is XL: they need
+  convergent germ rings, Cohen's structure theorem or multiplier-ideal constructions that
+  neither Mathlib nor the repo has.
+- **Brouwer, invariance of domain, Hörmander, Markov, Lie–Trotter, Minkowski II,
+  Harder–Narasimhan.** Proved in the repo, but no Atlas or formal-conjectures row turns on them.
+
 ## Recommended order
 
-Revised in round 2:
+Revised in round 3:
 
-1. **#2 von Koch / Schoenfeld**, then **#7 Mills**, a quick win with a ready formal-conjectures
-   statement. **#5 Cramér** falls out of #2 via Dudek.
-2. **In parallel:** zero counting `N(T) ≪ T log T` as a shared library, then **#8 density
-   hypothesis**, then **#9 Li's criterion**. That settles two *open* formal-conjectures entries.
-3. **#4 Dirichlet-L Lindelöf** (the statement is stubbed) and **#3 / #12** least primes via LLS,
-   which upgrades ankeny-grh and miller-grh at the same time.
-4. **Scoping spike on #1 Weinberger**, using LLS's split-prime bound to shrink the computation.
-5. **Later:** #10 Mertens (which needs a sharp-cutoff Perron), then #16; #11 Nicolas; #13;
-   #15; #14.
+1. **#20 Erdős 456 (Linnik)** as the smoke test for importing one module and running
+   `#print axioms` on it. Settle the U₀ question at the same time.
+2. **The GRH `ψ(x,χ)` bound** as a shared library, then **#17 Bombieri–Vinogradov**, the
+   `O`-forms of **#2 / #5**, **#8 density hypothesis**, **#21** and **#22**.
+3. **#1 idoneal numbers by the split-prime route**, then **#23 Stark–Heegner**, which shares the
+   least-split-prime bound. #1 is the only open formal-conjectures statement here that looks
+   reachable at tier U.
+4. **#19 and #18**, ports of existing proofs with their axioms discharged.
+5. **#2 with Schoenfeld's constant**, then **#7 Mills**; **#4 Dirichlet-L Lindelöf**;
+   **#3 / #12** least primes via LLS; **#9 Li's criterion**.
+6. **Later:** #10 Mertens, then #16; #24 ERH for abelian fields; #28; #32; #11; #13; #15; #14;
+   #29; #30; #31. **#25–#27** only if non-RH algebraic geometry belongs here.
 
 Use the workflow that worked for lindelof-rh: fix every step's Lean statement in
 `<Pkg>/Statement.lean` and prove the assembly first, then run parallel agents on one step each,
@@ -246,6 +367,7 @@ Kept so the next search doesn't rediscover these and argue about them again.
 
 ## See also
 
+- The lemma inventory behind round 3: [`rh-lemmas/README.md`](rh-lemmas/README.md).
 - Reasoning behind these choices is recorded in LivingBrain (see `AGENTS.md`, "Memory").
 - The Conjecture Atlas note with the same ranking:
   [senamakel/tiny-cortexdb-mathagent#1](https://github.com/senamakel/tiny-cortexdb-mathagent/pull/1).
