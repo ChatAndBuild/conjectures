@@ -5,9 +5,10 @@ number-theory conjectures and theorems, most of them conditional on RH or GRH. E
 submodule (`github.com/senamakel/<name>`) pinned to the commit last reviewed. This file is the
 tracker: when a box changes, update it here and bump the gitlink in the same commit.
 
-Status as of 2026-11-24, read from each repo's `main` (sources, READMEs, `docs/`). **None of it
-has been rebuilt on this box yet**; each "no sorry" claim comes from grepping the sources and
-reading the READMEs. Re-check before you rely on a box below.
+Status as of 2026-11-24. Every box marked **verified** below was rebuilt from source on the
+build box that day, its `#print axioms` output read, and (for tier U) its
+`scripts/check-unconditional.sh` run against riemann-hypothesis `507a75d91d`. Boxes for repos
+whose work is still on an open branch are marked **in progress** and are not yet verified.
 
 ## Memory: LivingBrain
 
@@ -148,99 +149,126 @@ Each README follows the shape already used across these repos:
     heading must not claim more than its table shows (e.g. "standard axioms only" above
     theorems that use `native_decide`).
 
-## Cross-repo issues (fix these first)
+## Cross-repo issues
 
-- [ ] **Dependency pins don't resolve.** All six sibling repos pin erdos-985 at
-      `63d68188f2e4…`, which no longer exists on GitHub: erdos-985's history was rewritten
-      (current `main` is `9538edb`). The commit survives only in the old checkout at
-      `~/work/personal/erdos-985` (branch `audit-proof-63d6818`). Its tree differs from
-      `9538edb` only by one README line, so repinning every sibling to `9538edb` (and updating
-      `lake-manifest.json`) is safe. Until then, a fresh `lake build` fails in every repo except
-      erdos-985.
-- [ ] **SSH require URLs.** The siblings use `git@github.com:senamakel/...`. Switch them to `https://`
-      so anonymous builds work (rule 7).
-- [ ] `miller-grh` pins `ankeny-grh` at `035c7aa`. ankeny `main` is `129ad57`, two merges ahead.
-      Bump it with the erdos repin.
-- [ ] No repo has a `LICENSE` file, and artin-grh's README says riemann-hypothesis has no licence
-      either. Decide on a licence, and check that copying its statement definitions word for word
-      is acceptable.
+- [x] **Dependency pins resolve.** Every merged sibling requires erdos-985 at `9538edb` (an
+      ancestor of its `main`, now `83cad09`) over HTTPS; miller-grh and bach-sorenson-grh require
+      ankeny-grh at `129ad57` (an ancestor of its `main`, now `61dee5c`). robin-rh and
+      grosswald-grh carry the same fix on their open `finality` PRs (#3 each).
+- [x] **SSH require URLs** switched to `https://` in every merged repo (rule 7). The repos are
+      private, so an anonymous `lake` still cannot fetch them; that is a visibility decision.
+- [x] **Unconditional checks run on this box**, 2026-11-24, riemann-hypothesis `507a75d91d`
+      (98 GB cache at `~/work/personal/riemann-hypothesis`, linked from the community cache, not
+      rebuilt from source): erdos-985 `57436d3`, ankeny-grh `dcc7a79`, miller-grh `81154df`,
+      lindelof-rh `3975bbb` (one rename-only commit before the merged head), artin-grh `53073d1`,
+      li-criterion-rh `f058257`, bach-sorenson-grh `2242e96`. No `sorryAx` in any log.
+      The shell's hard open-file limit (524288) is too low for the import: run
+      `sudo prlimit --pid $$ --nofile=2000000:2000000` first. Up to four checks fit in RAM at once.
+- [ ] No repo has a `LICENSE` file, and riemann-hypothesis has no licence either. Decide on a
+      licence, and check that copying its statement definitions word for word is acceptable.
 - [ ] No CI anywhere. Add a GitHub Action that runs `lake build` and checks
       `#print axioms` against an allow-list (the cheap build, not the unconditional one).
-- [ ] No unconditional check has run on this box. Run `scripts/check-unconditional.sh` once
-      per repo and record the date and commit here.
+- [ ] `RH_FULL_BUILD=1` (rebuilding riemann-hypothesis from source) has never been run.
 
 ## Per-repo checklist
 
-### erdos-985: every odd prime has a prime primitive root `q < p` · **tier U, complete**
+### erdos-985: every odd prime has a prime primitive root `q < p` · **tier U, complete, verified**
 - [x] Statement matches formal-conjectures `erdos_985` verbatim
 - [x] `erdos_985_of_GRH` (C), no `sorry`
-- [x] `Unconditional/`: `erdos_985` (U), standard three + 20 `native_decide`
+- [x] `Unconditional/`: `erdos_985` (U), standard three + 20 `native_decide`. The `sorryAx` seen
+      on 2026-11-22 came from a stale checkout and is not present on `main`
 - [x] Finite check `p < 10^8` with a proved-sound checker
 - [x] Paper (`paper/erdos985.pdf`)
-- [ ] README: add a Credits section (Vendor/PNT is mentioned only inline) and a tier line
+- [x] README: Credits section and tier line
 - [ ] Clean up the old checkout `~/work/personal/erdos-985` (branch `audit-proof-63d6818`, untracked `worktrees/`)
 
-### ankeny-grh: Bach's explicit Ankeny bound · **tier U with constant 21/5, complete for 21/5**
+### ankeny-grh: Bach's explicit Ankeny bound · **tier U with constant 21/5, complete for 21/5, verified**
 - [x] `bach_of_GRH : BachSubgroupBound (21/5)`, `leastNonresidue_of_GRH`, no `sorry`
 - [x] `Unconditional/`: `bach_unconditional`, `leastNonresidue_unconditional` (U), + 8 `native_decide`
 - [x] README explains the deviation from Bach's `2`
-- [ ] Optional: get to `c ≈ 4.05` by extending the computation to `2^18` (about 4× the work)
-- [ ] Open: Bach's constant `2`, which needs a sharper explicit formula in erdos-985 (out of scope for now)
+- [ ] Optional: get to `c ≈ 4.05` by extending the computation to `2^18` (about 80 CPU-minutes, 4× today's)
+- [ ] Open: Bach's constant `2`. The erdos-985 zero-sum bound caps this method at `c > 16/9`
+      asymptotically and at `q ≳ 10^28` for `c = 2`; it needs a sharper explicit formula
+      (lls-grh is attempting one)
 
-### miller-grh: deterministic Miller–Rabin under GRH · **tier U with constant 21/5, complete**
+### miller-grh: deterministic Miller–Rabin under GRH · **tier U with constant 21/5, complete, verified**
 - [x] `miller_of_bach` and `prime_iff_of_bach` (reduction, standard axioms only)
 - [x] `miller_of_GRH : MillerStatement (21/5)` and the executable `millerTestGRH_iff_prime`
-- [x] `Unconditional/`: `miller_unconditional`, `millerTestGRH_iff_prime_unconditional` (U)
-- [ ] `millerTest_iff_prime` assumes `BachSubgroupBound 2`, which no repo proves. In the README,
-      label it conditional on Bach's constant, or drop it (rule 12)
-- [ ] README heading "Results (no `sorry`, standard axioms only)" overclaims for the GRH
-      theorems, which carry ankeny's 8 `native_decide`. Fix the wording
-- [ ] Bump the ankeny pin (see cross-repo issues)
+- [x] `Unconditional/`: `miller_unconditional`, `millerTestGRH_iff_prime_unconditional` (U), + ankeny's 8 `native_decide`
+- [x] `millerTest_iff_prime` (assumes `BachSubgroupBound 2`) is labelled "conditional on Bach's
+      constant 2 (not a headline result)" in the README
+- [x] README headings no longer claim "standard axioms only" for the GRH theorems
+- [x] ankeny pin at `129ad57`
 
-### grosswald-grh: `g(p) < √p − 2` for `p > 409` · **tier U for `p > 2.5·10^15`, tier H for the full statement**
+### grosswald-grh: `g(p) < √p − 2` for `p > 409` · **tier U for `p > 2.5·10^15`, tier H for the full statement; in progress**
 - [x] `prime_primitive_root_of_GRH_large` (C), no `sorry`, + 10 `native_decide`
 - [x] `Unconditional/`: `prime_primitive_root_large_unconditional` (U)
 - [x] `grosswald_of_GRH` / `grosswald_of_verified` with `VerifiedUpTo 2500000000000000` as a hypothesis
-- [ ] The full `GrosswaldStatement` stays tier H: the Cohen–Oliveira e Silva–Trudgian range
-      `409 < p ≤ 2.5·10^15` (about 7·10^13 primes) is too large to replay. The only path to tier
-      U is lowering the analytic threshold far enough that the remaining range fits in
-      `native_decide`. Decide whether to attempt that or record it as the final state
-- [ ] `scripts/__pycache__` is in the repo tree. Remove it and add a `.gitignore`
+- [ ] The full `GrosswaldStatement` is still tier H: the Cohen–Oliveira e Silva–Trudgian range
+      `409 < p ≤ 2.5·10^15` (about 7·10^13 primes) is too large to replay as it stands. An agent
+      is lowering the analytic threshold and sizing a proved-sound checker (PR #3, open)
+- [ ] `scripts/__pycache__` removal and `.gitignore` are on PR #3
 
-### robin-rh: Robin's inequality `σ(n) < e^γ n log log n`, `n > 5040` · **tier U + H**
+### robin-rh: Robin's inequality `σ(n) < e^γ n log log n`, `n > 5040` · **tier U + H; in progress**
 - [x] `robin_of_RH_of_verified` (C + H), no `sorry`; `RobinVerifiedRange` is the Morrill–Platt range
 - [x] `Unconditional/`: `robin_of_verified` (U + H), standard three only
 - [x] `lagarias_of_RH`, Lagarias's form, with 1 `native_decide` for `13 ≤ n ≤ 5040`
-- [ ] **Rule 4 violation**: `robin_small_range` in `Robin/Small.lean` is a cited `sorry`, and
-      `robin_unconditional` / `lagarias_unconditional` carry `sorryAx`. Make
-      `lagarias_of_RH_of_verified` take the range as a hypothesis too, then delete the `sorry`
-      or move it into a clearly labelled `Cited/` module that no headline theorem uses
-- [ ] Open: push the analytic threshold `x ≥ e^30` down far enough to check the remaining range
-      directly (that would make it tier U with no H). Probably out of reach; record it as the final state if so
+- [ ] Rule 4 violation on `main`: `robin_small_range` in `Robin/Small.lean` is a cited `sorry`.
+      PR #3 (open) removes it and makes the range a hypothesis everywhere
+- [ ] Open: eliminate `RobinVerifiedRange` (lower the analytic threshold `x ≥ e^30` and check the
+      remaining colossally abundant numbers with a sound checker). An agent is sizing this
 
-### lindelof-rh: Lindelöf from RH · **tier U for ζ, complete; Dirichlet stretch goal open**
-- [x] `lindelof_of_RH` (C), no `sorry` on its path
-- [x] `Unconditional/`: `lindelof_hypothesis` (U), standard three only
-- [ ] Stretch: `dirichletLindelof_of_GRH` in `Lindelof/Dirichlet.lean` is `sorry`. Steps 1–8 of
-      `docs/BLUEPRINT.md` with `ξ` replaced by the completed L-function of the inducing primitive character
-- [ ] README is missing the standard sections (rule 10's table and caveat, Building, Layout). Add them
+### lindelof-rh: Lindelöf from RH/GRH, for ζ and Dirichlet L · **tier U, complete, verified**
+- [x] `lindelof_of_RH` (C) and `Unconditional/` `lindelof_hypothesis` (U), standard three only
+- [x] `dirichletLindelof_of_GRH` (C) proved, target statement unchanged; `Unconditional/`
+      `dirichletLindelof` (U), standard three only
+- [x] README has the standard sections
 
-### artin-grh: Hooley's theorem (Artin under GRH for Kummer fields) · **tier C + H; formal-conjectures target still `sorry`**
-- [x] Sieve half `artin_of_effectiveKummerChebotarev`, no `sorry`
-- [x] Analytic core (explicit formula, zero sums, Hadamard, unsmoothing), no `sorry`
-- [x] `conditional_artin_primitive_roots.parts.i_of_continuation` (C + H), standard three only;
-      Hecke's continuation `DedekindContinuation` is the H hypothesis
-- [ ] `effectiveKummerChebotarev_of_hooley` (`Artin/Interfaces.lean:53`) is `sorry`, so the
-      formal-conjectures statement in `Artin/Main.lean` (without `hc`) is not proved. Closing it
-      needs Hecke's continuation, functional equation and strip bound for `ζ_K`, which neither the
-      Mathlib pin nor upstream Mathlib has
-- [ ] Cannot become tier U: riemann-hypothesis gives RH for ζ and GRH for Dirichlet L only, and
-      the Kummer fields are non-abelian, so `HooleyHypothesis` stays a hypothesis. That's fine and
-      the README says so; the target is "C + Hecke formalised"
-- [ ] The GitHub repo description is empty. Set one
-- [ ] No `scripts/check-unconditional.sh` and no `Unconditional/` (expected; keep the README's explanation)
-- [ ] README: the build section mentions a `../lean-grh-shared/packages` symlink that doesn't exist
-      on this box. Either document how to set it up or drop it
+### artin-grh: Hooley's theorem (Artin under GRH for Kummer fields) · **tier C, at its ceiling, verified**
+- [x] Sieve half and analytic core, no `sorry`; the repo contains no `sorry` at all
+- [x] `conditional_artin_primitive_roots.parts.i_of_continuation` (C + H) in the main library
+- [x] Hecke's continuation discharged: `Artin.Unconditional.dedekindContinuation` imports the
+      Tate-thesis module of riemann-hypothesis (the strip bound is proved here from Mathlib
+      alone), giving the formal-conjectures statement
+      `Artin.Unconditional.conditional_artin_primitive_roots_parts_i` with `HooleyHypothesis`
+      as its only hypothesis, standard three only
+- [x] `scripts/check-unconditional.sh`, repo description, real build section
+- [ ] Cannot become tier U (verified at `507a75d91d`): every zero-location theorem in
+      riemann-hypothesis is for ζ or Dirichlet L; it has Hecke L-functions but nothing on their
+      zeros in the critical strip, and the Kummer fields are non-abelian for odd prime `k`
+- [ ] Optional: Hecke's continuation inside the main library without riemann-hypothesis
+      (Poisson summation on `ℝ^{r₁} × ℂ^{r₂}`, theta inversion per ideal class; multi-week)
+
+### li-criterion-rh: Li's criterion, RH ⇒ `λ_n > 0` · **tier U, complete, verified**
+- [x] `nontrivialPosZeros`, `lambda` copied verbatim from formal-conjectures (`86a2f58a`)
+- [x] `li_criterion_rhs_of_RH` (C) and `Unconditional/` `li_criterion_rhs` (U), standard three
+      only. This is the entry formal-conjectures lists as open
+- [ ] Out of scope so far: the converse (positivity ⇒ RH, Bombieri–Lagarias)
+
+### bach-sorenson-grh: least prime `p ≡ a (mod q)` · **tier U with constant 7/2, complete for 7/2, verified**
+- [x] `bachSorenson_of_GRH : BachSorensonBound (7/2)` (C), `p < (7/2)(q log q)²` for `q ≥ 2`
+- [x] `Unconditional/`: `bachSorenson_unconditional` (U), standard three + 16 `native_decide`
+      (every class for `q < 2^15`, proved-sound checker)
+- [ ] Open: the paper's constant `2` (same barrier as ankeny-grh)
+
+### mills-rh: Mills' constant in `(1.3063778838, 1.3063778839)` · **lower bound tier D; enclosure C + H; in progress**
+- [x] `mills_lower_bound` (D), standard three only; statements verbatim from formal-conjectures
+- [x] `mills_bounds_of_primeBetweenCubes` from the single hypothesis `PrimeBetweenCubes x₀`,
+      any `x₀ ≤ 2521008887` (PR #1, open)
+- [ ] Discharge `PrimeBetweenCubes` from Schoenfeld's bound once schoenfeld-rh is on `main`
+
+### In progress, nothing verified yet
+Scaffolded 2026-11-24, one agent each on branch `finality`; the gitlink is the scaffold commit.
+- [ ] weinberger-grh: idoneal numbers and class number one under GRH (#1)
+- [ ] schoenfeld-rh: `|π(x) − li(x)| < √x log x/(8π)` under RH (#2); target statements fixed
+- [ ] cramer-rh: Cramér's prime-gap theorem under RH (#5)
+- [ ] goldbach-grh: ternary Goldbach under GRH (#6)
+- [ ] density-rh: zero counting `N(T) ≪ T log T` and the density hypothesis (#8)
+- [ ] mertens-rh: `M(x) = O(x^{1/2+ε})`, plus Riesz and Hardy–Littlewood (#10, #16)
+- [ ] nicolas-rh: Nicolas' primorial inequality (#11)
+- [ ] lls-grh: Lamzouri–Li–Soundararajan least primes and `L(1,χ)` bounds (#12, #13)
+- [ ] erdos-233: sum of squared prime gaps under RH (#14)
+- [ ] littlewood-rh: `log|ζ(1/2+it)| ≪ log t / log log t` (#15)
 
 ## Working here
 
