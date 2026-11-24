@@ -24,6 +24,31 @@ server (`https://livingbrain.fernmcp.dev/livingbrain`, configured in `~/.claude.
   it. When a checklist box changes here, record the why in LivingBrain.
 - If the `livingbrain` tools aren't loaded in a session, say so and don't fall back silently to
   local memory files.
+- Brain: `projec1006` (`63af7dac-de64-581f-9949-9e1bed98d7fd`). Earlier captures used the source
+  label "RH formalization repos"; keep using it.
+
+### Ingestion
+
+`scripts/lb_ingest.py` keeps the brain in step with the repos. For each submodule's remote
+default branch, and for this superproject's `AGENTS.md` and `README.md`, it captures:
+- documentation (`README.md`, `AGENTS.md`, `docs/*.md`, `paper/README.md`) whenever its content changes;
+- new commit messages: the history of attempts, one note per repo per run;
+- every PR, in any state, re-captured when it's updated. A PR closed without merging is
+  labelled an abandoned attempt;
+- branches with unmerged commits: attempts in flight or abandoned.
+
+Captures are idempotent: `originRef` carries the commit, content hash or update time, and
+`~/.local/state/conjectures-lb-ingest.json` records what was already sent. `--dry-run` shows the
+captures without sending anything. Credentials come from `~/.claude.json` and are never printed.
+Cron runs it hourly from the primary checkout and logs to `~/.cache/conjectures-lb-ingest.log`:
+
+```
+17 * * * * cd $HOME/work/personal/conjectures && flock -n $HOME/.cache/conjectures-lb-ingest.lock python3 -I scripts/lb_ingest.py >> $HOME/.cache/conjectures-lb-ingest.log 2>&1
+```
+
+The script records only what git and GitHub know. Reasoning that never reaches a commit (an
+approach dropped mid-session, a constant sized up in a scratch script) has to be written to
+LivingBrain by hand, as above.
 
 ## Shared facts
 
