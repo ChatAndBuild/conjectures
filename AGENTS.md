@@ -241,7 +241,9 @@ Each README follows the shape already used across these repos:
 
 ## Working here
 
-- This is a superproject. For cross-repo work, run `worktree <slug>` here at the top level
+- Changes to this superproject's own files (`AGENTS.md`, `README.md`, `docs/`, `scripts/`) go
+  straight to `main`: no worktree, no PR.
+- For cross-repo work inside the submodules, run `worktree <slug>` here at the top level
   (never inside a submodule). PR each submodule branch to `senamakel/<repo>`, then commit the
   updated gitlinks and checklist here. To refresh every pin:
   `git submodule update --remote` followed by a review of what changed.
