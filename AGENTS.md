@@ -9,6 +9,22 @@ Status as of 2026-11-24, read from each repo's `main` (sources, READMEs, `docs/`
 has been rebuilt on this box yet**; each "no sorry" claim comes from grepping the sources and
 reading the READMEs. Re-check before you rely on a box below.
 
+## Memory: LivingBrain
+
+Memory for this work lives in [LivingBrain](https://livingbrain.com), the same memory layer the
+OpenHuman agents used to build erdos-985. Claude Code reaches it through the `livingbrain` MCP
+server (`https://livingbrain.fernmcp.dev/livingbrain`, configured in `~/.claude.json`).
+
+- At the start of a session, recall what LivingBrain holds about the conjecture you're working
+  on before you re-derive it: approaches tried, dead ends, constants, why a hypothesis exists.
+- Write to LivingBrain whatever the repos can't hold: an approach that failed and why, a
+  threshold or constant you sized up, a decision and its reason. Don't store anything git
+  already records.
+- This file stays the source of truth for **status**. LivingBrain holds the reasoning behind
+  it. When a checklist box changes here, record the why in LivingBrain.
+- If the `livingbrain` tools aren't loaded in a session, say so and don't fall back silently to
+  local memory files.
+
 ## Shared facts
 
 - Toolchain: Lean `v4.36.0`, Mathlib `fc4f59e5`. `erdos-985` is the root: it holds the analytic
