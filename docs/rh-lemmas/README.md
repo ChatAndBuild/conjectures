@@ -23,6 +23,12 @@ import.
 - **No licence.** We may import the repo as a dependency. We may not copy its code. These files
   paraphrase statements and give names and paths only.
 
+Two corrections to the reports, found afterwards. riemann-hypothesis is on Lean `v4.36.0`
+(its README's `v4.33.1` is out of date), the same toolchain as this workspace, so the toolchain
+caveat in `targets-algebraic.md` does not apply. And the strip bound that report lists as
+missing for `DedekindContinuation` was proved in artin-grh PR #11, now merged. Global
+Kronecker–Weber exists (`UpperTheory.V.CF.kw`, file 03), although file 07 says it does not.
+
 Before any of these lemmas goes on the path to a headline theorem, open its statement, check the
 definitions it uses, and run `#print axioms` on it.
 
