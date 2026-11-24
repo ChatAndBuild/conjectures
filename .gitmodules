@@ -19,3 +19,6 @@
 [submodule "artin-grh"]
 	path = artin-grh
 	url = https://github.com/senamakel/artin-grh.git
+[submodule "hironaka-fc"]
+	path = hironaka-fc
+	url = https://github.com/senamakel/hironaka-fc.git
