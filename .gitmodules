@@ -22,3 +22,42 @@
 [submodule "hironaka-fc"]
 	path = hironaka-fc
 	url = https://github.com/senamakel/hironaka-fc.git
+[submodule "weinberger-grh"]
+	path = weinberger-grh
+	url = https://github.com/senamakel/weinberger-grh.git
+[submodule "schoenfeld-rh"]
+	path = schoenfeld-rh
+	url = https://github.com/senamakel/schoenfeld-rh.git
+[submodule "bach-sorenson-grh"]
+	path = bach-sorenson-grh
+	url = https://github.com/senamakel/bach-sorenson-grh.git
+[submodule "cramer-rh"]
+	path = cramer-rh
+	url = https://github.com/senamakel/cramer-rh.git
+[submodule "goldbach-grh"]
+	path = goldbach-grh
+	url = https://github.com/senamakel/goldbach-grh.git
+[submodule "mills-rh"]
+	path = mills-rh
+	url = https://github.com/senamakel/mills-rh.git
+[submodule "density-rh"]
+	path = density-rh
+	url = https://github.com/senamakel/density-rh.git
+[submodule "li-criterion-rh"]
+	path = li-criterion-rh
+	url = https://github.com/senamakel/li-criterion-rh.git
+[submodule "mertens-rh"]
+	path = mertens-rh
+	url = https://github.com/senamakel/mertens-rh.git
+[submodule "nicolas-rh"]
+	path = nicolas-rh
+	url = https://github.com/senamakel/nicolas-rh.git
+[submodule "lls-grh"]
+	path = lls-grh
+	url = https://github.com/senamakel/lls-grh.git
+[submodule "erdos-233"]
+	path = erdos-233
+	url = https://github.com/senamakel/erdos-233.git
+[submodule "littlewood-rh"]
+	path = littlewood-rh
+	url = https://github.com/senamakel/littlewood-rh.git
