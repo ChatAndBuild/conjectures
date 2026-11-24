@@ -1,0 +1,21 @@
+[submodule "erdos-985"]
+	path = erdos-985
+	url = https://github.com/senamakel/erdos-985.git
+[submodule "ankeny-grh"]
+	path = ankeny-grh
+	url = https://github.com/senamakel/ankeny-grh.git
+[submodule "miller-grh"]
+	path = miller-grh
+	url = https://github.com/senamakel/miller-grh.git
+[submodule "grosswald-grh"]
+	path = grosswald-grh
+	url = https://github.com/senamakel/grosswald-grh.git
+[submodule "robin-rh"]
+	path = robin-rh
+	url = https://github.com/senamakel/robin-rh.git
+[submodule "lindelof-rh"]
+	path = lindelof-rh
+	url = https://github.com/senamakel/lindelof-rh.git
+[submodule "artin-grh"]
+	path = artin-grh
+	url = https://github.com/senamakel/artin-grh.git
