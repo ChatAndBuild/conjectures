@@ -4,6 +4,10 @@ Working notes, 2026-11-24, on which RH/GRH consequences to formalise next. Tiers
 and the rules they refer to are defined in [`AGENTS.md`](../AGENTS.md). Status of the existing
 seven repos lives in `AGENTS.md`, not here.
 
+**Every target here is already a theorem in the literature**, proved outright or assuming
+RH/GRH. [`LITERATURE_STATUS.md`](LITERATURE_STATUS.md) labels each one (known; known, via GRH
+here; RH-consequence; RH-equivalent) and says how to describe it. None is new mathematics.
+
 ## The test a candidate has to pass
 
 [riemann-hypothesis](https://github.com/leanprover-community/riemann-hypothesis) proves exactly

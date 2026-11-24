@@ -117,6 +117,32 @@ Rules:
 7. **Pins must resolve.** Every `[[require]]` rev must exist on the remote's default branch, and
    its URL must be an HTTPS URL that an anonymous `lake` can fetch.
 
+## Literature status: label every result
+
+Nothing in this workspace is new mathematics. Every result is already a theorem in the
+literature; what is new is the Lean proof. So each result carries a second label next to its
+tier, saying how it stands in the literature. The label goes in the README table, in the
+checklist heading below, and in the opening paragraph of the repo's README (README rule 13).
+Attributions are in [`docs/LITERATURE_STATUS.md`](docs/LITERATURE_STATUS.md).
+
+| Label | Meaning | How to describe it |
+|---|---|---|
+| **known** | Proved in the literature with no hypothesis, and not in Lean before. Our proof uses no RH | "a Lean formalisation of X (author, year)" |
+| **known, via GRH here** | Proved in the literature with no hypothesis, but our proof assumes RH or GRH. Ours is the weaker result | "X under GRH, in Lean; X itself is a theorem of (author, year)" |
+| **RH-consequence** | A published theorem of the form "RH/GRH implies X", with X open otherwise | main library: "GRH implies X, following (author, year)"; `Unconditional/`: "X, given the unverified Lean proof of RH/GRH in riemann-hypothesis" |
+| **RH-equivalent** | X is known to be equivalent to RH, so an unconditional X says nothing beyond the RH claim | as RH-consequence, and say it is equivalent |
+| **new** | An open problem settled by an argument of ours. **No result has this label** | needs the user's sign-off before any README uses it |
+
+Rules:
+
+- A result is never called "solved", "settled" or "now proved" on the strength of
+  riemann-hypothesis. Its proof of RH has not been independently verified. If it fails, every
+  tier-U theorem falls back to tier C.
+- "Not in Lean before" is a claim too. Before writing it, search Mathlib, formal-conjectures'
+  `formal_proof` attributes and GitHub for an existing formalisation, and say what was searched.
+- When picking a target, record its label in `docs/NEXT_TARGETS.md` first. A **known** target is
+  a formalisation project; choose it for that reason, not because it sounds like a conjecture.
+
 ## README rules
 
 Each README follows the shape already used across these repos:
@@ -148,6 +174,12 @@ Each README follows the shape already used across these repos:
     result. Write "proves X under GRH" or "proves X, given the computation Y". A section
     heading must not claim more than its table shows (e.g. "standard axioms only" above
     theorems that use `native_decide`).
+13. **Say what is already known.** The opening paragraph states the result's status in the
+    literature, using the wording in [`docs/LITERATURE_STATUS.md`](docs/LITERATURE_STATUS.md):
+    proved unconditionally (group A), a published consequence of RH/GRH (group B), or
+    equivalent to RH (group C). Nothing here is new mathematics. A README never says a result
+    is "solved" or "now proved" on the strength of riemann-hypothesis, and when a theorem known
+    unconditionally is proved here through GRH, the README says our proof is the weaker one.
 
 ## Cross-repo issues
 
@@ -172,7 +204,7 @@ Each README follows the shape already used across these repos:
 
 ## Per-repo checklist
 
-### erdos-985: every odd prime has a prime primitive root `q < p` · **tier U, complete, verified**
+### erdos-985: every odd prime has a prime primitive root `q < p` · **tier U, complete, verified** · *RH-consequence*
 - [x] Statement matches formal-conjectures `erdos_985` verbatim
 - [x] `erdos_985_of_GRH` (C), no `sorry`
 - [x] `Unconditional/`: `erdos_985` (U), standard three + 20 `native_decide`. The `sorryAx` seen
@@ -182,7 +214,7 @@ Each README follows the shape already used across these repos:
 - [x] README: Credits section and tier line
 - [ ] Clean up the old checkout `~/work/personal/erdos-985` (branch `audit-proof-63d6818`, untracked `worktrees/`)
 
-### ankeny-grh: Bach's explicit Ankeny bound · **tier U with constant 21/5, complete for 21/5, verified**
+### ankeny-grh: Bach's explicit Ankeny bound · **tier U with constant 21/5, complete for 21/5, verified** · *RH-consequence*
 - [x] `bach_of_GRH : BachSubgroupBound (21/5)`, `leastNonresidue_of_GRH`, no `sorry`
 - [x] `Unconditional/`: `bach_unconditional`, `leastNonresidue_unconditional` (U), + 8 `native_decide`
 - [x] README explains the deviation from Bach's `2`
@@ -191,7 +223,7 @@ Each README follows the shape already used across these repos:
       asymptotically and at `q ≳ 10^28` for `c = 2`; it needs a sharper explicit formula
       (lls-grh is attempting one)
 
-### miller-grh: deterministic Miller–Rabin under GRH · **tier U with constant 21/5, complete, verified**
+### miller-grh: deterministic Miller–Rabin under GRH · **tier U with constant 21/5, complete, verified** · *RH-consequence*
 - [x] `miller_of_bach` and `prime_iff_of_bach` (reduction, standard axioms only)
 - [x] `miller_of_GRH : MillerStatement (21/5)` and the executable `millerTestGRH_iff_prime`
 - [x] `Unconditional/`: `miller_unconditional`, `millerTestGRH_iff_prime_unconditional` (U), + ankeny's 8 `native_decide`
@@ -200,7 +232,7 @@ Each README follows the shape already used across these repos:
 - [x] README headings no longer claim "standard axioms only" for the GRH theorems
 - [x] ankeny pin at `129ad57`
 
-### grosswald-grh: `g(p) < √p − 2` for `p > 409` · **tier U for `p > 2.5·10^15`, tier H for the full statement; in progress**
+### grosswald-grh: `g(p) < √p − 2` for `p > 409` · **tier U for `p > 2.5·10^15`, tier H for the full statement; in progress** · *RH-consequence*
 - [x] `prime_primitive_root_of_GRH_large` (C), no `sorry`, + 10 `native_decide`
 - [x] `Unconditional/`: `prime_primitive_root_large_unconditional` (U)
 - [x] `grosswald_of_GRH` / `grosswald_of_verified` with `VerifiedUpTo 2500000000000000` as a hypothesis
@@ -209,7 +241,7 @@ Each README follows the shape already used across these repos:
       is lowering the analytic threshold and sizing a proved-sound checker (PR #3, open)
 - [ ] `scripts/__pycache__` removal and `.gitignore` are on PR #3
 
-### robin-rh: Robin's inequality `σ(n) < e^γ n log log n`, `n > 5040` · **tier U + H; in progress**
+### robin-rh: Robin's inequality `σ(n) < e^γ n log log n`, `n > 5040` · **tier U + H; in progress** · *RH-equivalent*
 - [x] `robin_of_RH_of_verified` (C + H), no `sorry`; `RobinVerifiedRange` is the Morrill–Platt range
 - [x] `Unconditional/`: `robin_of_verified` (U + H), standard three only
 - [x] `lagarias_of_RH`, Lagarias's form, with 1 `native_decide` for `13 ≤ n ≤ 5040`
@@ -218,13 +250,13 @@ Each README follows the shape already used across these repos:
 - [ ] Open: eliminate `RobinVerifiedRange` (lower the analytic threshold `x ≥ e^30` and check the
       remaining colossally abundant numbers with a sound checker). An agent is sizing this
 
-### lindelof-rh: Lindelöf from RH/GRH, for ζ and Dirichlet L · **tier U, complete, verified**
+### lindelof-rh: Lindelöf from RH/GRH, for ζ and Dirichlet L · **tier U, complete, verified** · *RH-consequence*
 - [x] `lindelof_of_RH` (C) and `Unconditional/` `lindelof_hypothesis` (U), standard three only
 - [x] `dirichletLindelof_of_GRH` (C) proved, target statement unchanged; `Unconditional/`
       `dirichletLindelof` (U), standard three only
 - [x] README has the standard sections
 
-### artin-grh: Hooley's theorem (Artin under GRH for Kummer fields) · **tier C, at its ceiling, verified**
+### artin-grh: Hooley's theorem (Artin under GRH for Kummer fields) · **tier C, at its ceiling, verified** · *RH-consequence*
 - [x] Sieve half and analytic core, no `sorry`; the repo contains no `sorry` at all
 - [x] `conditional_artin_primitive_roots.parts.i_of_continuation` (C + H) in the main library
 - [x] Hecke's continuation discharged: `Artin.Unconditional.dedekindContinuation` imports the
@@ -239,19 +271,19 @@ Each README follows the shape already used across these repos:
 - [ ] Optional: Hecke's continuation inside the main library without riemann-hypothesis
       (Poisson summation on `ℝ^{r₁} × ℂ^{r₂}`, theta inversion per ideal class; multi-week)
 
-### li-criterion-rh: Li's criterion, RH ⇒ `λ_n > 0` · **tier U, complete, verified**
+### li-criterion-rh: Li's criterion, RH ⇒ `λ_n > 0` · **tier U, complete, verified** · *RH-equivalent*
 - [x] `nontrivialPosZeros`, `lambda` copied verbatim from formal-conjectures (`86a2f58a`)
 - [x] `li_criterion_rhs_of_RH` (C) and `Unconditional/` `li_criterion_rhs` (U), standard three
       only. This is the entry formal-conjectures lists as open
 - [ ] Out of scope so far: the converse (positivity ⇒ RH, Bombieri–Lagarias)
 
-### bach-sorenson-grh: least prime `p ≡ a (mod q)` · **tier U with constant 7/2, complete for 7/2, verified**
+### bach-sorenson-grh: least prime `p ≡ a (mod q)` · **tier U with constant 7/2, complete for 7/2, verified** · *RH-consequence*
 - [x] `bachSorenson_of_GRH : BachSorensonBound (7/2)` (C), `p < (7/2)(q log q)²` for `q ≥ 2`
 - [x] `Unconditional/`: `bachSorenson_unconditional` (U), standard three + 16 `native_decide`
       (every class for `q < 2^15`, proved-sound checker)
 - [ ] Open: the paper's constant `2` (same barrier as ankeny-grh)
 
-### density-rh: zero counting and the density hypothesis · **tier U (library tier D), complete, verified**
+### density-rh: zero counting and the density hypothesis · **tier U (library tier D), complete, verified** · *RH-consequence; the zero count is known*
 - [x] Zero-counting library `Density.ZeroCount`, unconditional (D), standard three only:
       `N(T) ≪ T log T` (`zeroCountOn_riemannZeta_le_of_subset_strip`) and
       `N(T+1) − N(T) ≪ log T` (`zeroCountOn_riemannZeta_le_of_subset_box`), with multiplicity.
@@ -262,7 +294,7 @@ Each README follows the shape already used across these repos:
       is the unconditional `N(T)` bound
 - [ ] In progress: `guth_maynard_zero_density` (the 30/13 statement) as a corollary
 
-### nicolas-rh: Nicolas' inequality `N_k/φ(N_k) > e^γ log log N_k`, all `k ≥ 1` · **tier U, complete, verified**
+### nicolas-rh: Nicolas' inequality `N_k/φ(N_k) > e^γ log log N_k`, all `k ≥ 1` · **tier U, complete, verified** · *RH-equivalent*
 - [x] `nicolas_of_RH` (C) and `Unconditional/` `nicolas_unconditional` (U): standard three + 1
       `native_decide` (`Nicolas.Check.loop_ok`: rational interval check at the 9591 primes
       `3 ≤ p ≤ 10^5`, proved-sound checker). Checked 2026-11-24 at `4229e63`
@@ -270,22 +302,34 @@ Each README follows the shape already used across these repos:
 - [x] Requires robin-rh at `dfa8d63` for its Mertens and RH estimates; does not import `Robin/Small.lean`
 - [ ] Bump the robin-rh pin once robin PR #3 merges
 
-### mills-rh: Mills' constant in `(1.3063778838, 1.3063778839)` · **lower bound tier D; enclosure C + H; in progress**
+### mills-rh: Mills' constant in `(1.3063778838, 1.3063778839)` · **lower bound tier D; enclosure C + H; in progress** · *known (lower bound); RH-consequence (enclosure)*
 - [x] `mills_lower_bound` (D), standard three only; statements verbatim from formal-conjectures
 - [x] `mills_bounds_of_primeBetweenCubes` from the single hypothesis `PrimeBetweenCubes x₀`,
       any `x₀ ≤ 2521008887` (PR #1, open)
 - [ ] Discharge `PrimeBetweenCubes` from Schoenfeld's bound once schoenfeld-rh is on `main`
 
+### hironaka-fc: Hironaka's resolution of singularities in characteristic 0 · **tier U₀, complete, verified** · *known*
+- [x] Statement matches formal-conjectures `resolution_of_singularities_of_charZero` verbatim
+- [x] `hironaka_of_smoothModification` (H; input `SmoothModification`, Mathlib objects only), no
+      `sorry`, standard three only
+- [x] `Unconditional/`: `resolution_of_singularities_of_charZero` (U₀), standard three only. It
+      imports one riemann-hypothesis module and uses no RH or GRH theorem
+- [x] Group A in `docs/LITERATURE_STATUS.md`: a formalisation of Hironaka 1964. The resolution
+      algorithm is the RH repo's; this repo proves the glue (about 90 lines)
+- [ ] Tier D: discharge `SmoothModification` from resolutionorg/hironaka (Apache-2.0) once it is
+      ported from Lean `v4.35.0` (420,000 lines, 835 Mathlib commits behind the pin)
+- [ ] #26 Zariski's local uniformisation belongs in this repo; not started
+
 ### In progress, nothing verified yet
 Scaffolded 2026-11-24, one agent each on branch `finality`; the gitlink is the scaffold commit.
-- [ ] weinberger-grh: idoneal numbers and class number one under GRH (#1)
-- [ ] schoenfeld-rh: `|π(x) − li(x)| < √x log x/(8π)` under RH (#2); target statements fixed
-- [ ] cramer-rh: Cramér's prime-gap theorem under RH (#5)
-- [ ] goldbach-grh: ternary Goldbach under GRH (#6)
-- [ ] mertens-rh: `M(x) = O(x^{1/2+ε})`, plus Riesz and Hardy–Littlewood (#10, #16)
-- [ ] lls-grh: Lamzouri–Li–Soundararajan least primes and `L(1,χ)` bounds (#12, #13)
-- [ ] erdos-233: sum of squared prime gaps under RH (#14)
-- [ ] littlewood-rh: `log|ζ(1/2+it)| ≪ log t / log log t` (#15)
+- [ ] weinberger-grh: idoneal numbers and class number one under GRH (#1) · *RH-consequence*
+- [ ] schoenfeld-rh: `|π(x) − li(x)| < √x log x/(8π)` under RH (#2); target statements fixed · *RH-consequence*
+- [ ] cramer-rh: Cramér's prime-gap theorem under RH (#5) · *RH-consequence*
+- [ ] goldbach-grh: ternary Goldbach under GRH (#6) · *known, via GRH here*
+- [ ] mertens-rh: `M(x) = O(x^{1/2+ε})`, plus Riesz and Hardy–Littlewood (#10, #16) · *RH-equivalent*
+- [ ] lls-grh: Lamzouri–Li–Soundararajan least primes and `L(1,χ)` bounds (#12, #13) · *RH-consequence*
+- [ ] erdos-233: sum of squared prime gaps under RH (#14) · *RH-consequence*
+- [ ] littlewood-rh: `log|ζ(1/2+it)| ≪ log t / log log t` (#15) · *RH-consequence*
 
 ## Working here
 

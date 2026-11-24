@@ -4,20 +4,28 @@ The tracking superproject for the Lean 4 formalisations of conjectures condition
 Each project is a submodule pinned to the commit last reviewed. [`AGENTS.md`](AGENTS.md) holds
 the status checklist, the proof-tier rules (when a result counts as a direct proof) and the README rules.
 
-| Submodule | Result | Tier |
-|---|---|---|
-| [erdos-985](https://github.com/senamakel/erdos-985) | every odd prime has a prime primitive root `q < p` | U |
-| [ankeny-grh](https://github.com/senamakel/ankeny-grh) | Bach's Ankeny bound, constant `21/5` | U |
-| [miller-grh](https://github.com/senamakel/miller-grh) | deterministic Miller–Rabin, `4.2 log² n` bases | U |
-| [lindelof-rh](https://github.com/senamakel/lindelof-rh) | Lindelöf hypothesis for ζ and for Dirichlet L-functions | U |
-| [li-criterion-rh](https://github.com/senamakel/li-criterion-rh) | Li's criterion, positivity direction: `λ_n > 0` for `n ≥ 1` | U |
-| [bach-sorenson-grh](https://github.com/senamakel/bach-sorenson-grh) | least prime `p ≡ a (mod q)` is `< (7/2)(q log q)²` | U |
-| [density-rh](https://github.com/senamakel/density-rh) | density hypothesis for ζ; zero counting `N(T) ≪ T log T` (the latter with no hypothesis) | U (library D) |
-| [nicolas-rh](https://github.com/senamakel/nicolas-rh) | Nicolas' inequality `N_k/φ(N_k) > e^γ log log N_k` for every primorial | U |
-| [grosswald-grh](https://github.com/senamakel/grosswald-grh) | Grosswald's conjecture | U for `p > 2.5·10^15`, H below |
-| [robin-rh](https://github.com/senamakel/robin-rh) | Robin's inequality | U + H (Morrill–Platt range) |
-| [artin-grh](https://github.com/senamakel/artin-grh) | Hooley's conditional Artin theorem, Hecke's continuation discharged | C (GRH for the Kummer fields) |
-| [mills-rh](https://github.com/senamakel/mills-rh) | Mills' constant: lower bound `1.3063778838 < A` | D; upper bound C + H, in progress |
+**None of this is new mathematics.** Every result is a theorem already in the literature, proved
+outright or assuming RH/GRH; the repos formalise it in Lean. Tier U results rest on the RH proof
+in riemann-hypothesis, which has not been independently verified.
+The last column says how each result stands in the literature; the labels are defined in
+[`AGENTS.md`](AGENTS.md) and the attributions are in
+[`docs/LITERATURE_STATUS.md`](docs/LITERATURE_STATUS.md).
+
+| Submodule | Result | Tier | In the literature |
+|---|---|---|---|
+| [erdos-985](https://github.com/senamakel/erdos-985) | every odd prime has a prime primitive root `q < p` | U | RH-consequence |
+| [ankeny-grh](https://github.com/senamakel/ankeny-grh) | Bach's Ankeny bound, constant `21/5` | U | RH-consequence |
+| [miller-grh](https://github.com/senamakel/miller-grh) | deterministic Miller–Rabin, `4.2 log² n` bases | U | RH-consequence |
+| [lindelof-rh](https://github.com/senamakel/lindelof-rh) | Lindelöf hypothesis for ζ and for Dirichlet L-functions | U | RH-consequence |
+| [li-criterion-rh](https://github.com/senamakel/li-criterion-rh) | Li's criterion, positivity direction: `λ_n > 0` for `n ≥ 1` | U | RH-equivalent |
+| [bach-sorenson-grh](https://github.com/senamakel/bach-sorenson-grh) | least prime `p ≡ a (mod q)` is `< (7/2)(q log q)²` | U | RH-consequence |
+| [density-rh](https://github.com/senamakel/density-rh) | density hypothesis for ζ; zero counting `N(T) ≪ T log T` (the latter with no hypothesis) | U (library D) | RH-consequence; the zero count is known |
+| [nicolas-rh](https://github.com/senamakel/nicolas-rh) | Nicolas' inequality `N_k/φ(N_k) > e^γ log log N_k` for every primorial | U | RH-equivalent |
+| [grosswald-grh](https://github.com/senamakel/grosswald-grh) | Grosswald's conjecture | U for `p > 2.5·10^15`, H below | RH-consequence |
+| [robin-rh](https://github.com/senamakel/robin-rh) | Robin's inequality | U + H (Morrill–Platt range) | RH-equivalent |
+| [artin-grh](https://github.com/senamakel/artin-grh) | Hooley's conditional Artin theorem, Hecke's continuation discharged | C (GRH for the Kummer fields) | RH-consequence |
+| [hironaka-fc](https://github.com/senamakel/hironaka-fc) | Hironaka's resolution of singularities in characteristic 0 (formal-conjectures statement); uses no RH | U₀ | known |
+| [mills-rh](https://github.com/senamakel/mills-rh) | Mills' constant: lower bound `1.3063778838 < A` | D; upper bound C + H, in progress | known (lower bound); RH-consequence (enclosure) |
 
 The rows marked U were rebuilt and checked against riemann-hypothesis `507a75d91d` on
 2026-11-24. That links the proofs to a community build cache; it does not re-verify the RH/GRH
