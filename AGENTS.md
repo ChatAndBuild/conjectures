@@ -30,7 +30,9 @@ server (`https://livingbrain.fernmcp.dev/livingbrain`, configured in `~/.claude.
 ### Ingestion
 
 `scripts/lb_ingest.py` keeps the brain in step with the repos. For each submodule's remote
-default branch, and for this superproject's `AGENTS.md` and `README.md`, it captures:
+default branch, and for this superproject's `AGENTS.md`, `README.md` and everything under
+`docs/` (read from the working tree; a file over 45,000 characters is sent in parts, because
+LivingBrain rejects content over 50,000), it captures:
 - documentation (`README.md`, `AGENTS.md`, `docs/*.md`, `paper/README.md`) whenever its content changes;
 - new commit messages: the history of attempts, one note per repo per run;
 - every PR, in any state, re-captured when it's updated. A PR closed without merging is
