@@ -32,6 +32,19 @@ tier U. Details, the expected tier of each, and rejected candidates are in
 | 4 | Lindelöf for Dirichlet L-functions (stubbed in lindelof-rh) | GRH | U |
 | 5 | Cramér's prime-gap theorem (1920) | RH | U |
 | 6 | Ternary Goldbach (Deshouillers–Effinger–te Riele–Zinoviev 1997) | GRH | U or H, depending on the computation |
+| 7 | Mills' constant `A ∈ (1.3063778838, 1.3063778839)` (Caldwell–Cheng 2005) | RH | U |
+| 8 | Density hypothesis (open in formal-conjectures) | RH | U |
+| 9 | Li's criterion, RH ⇒ `λ_n > 0` (open in formal-conjectures) | RH | U |
+| 10 | Mertens `M(x) = O(x^{1/2+ε})`, Redheffer, Franel–Landau | RH | U |
+| 11 | Nicolas' criterion (the φ version of Robin) | RH | U, if the small range fits |
+| 12 | Lamzouri–Li–Soundararajan least primes, upgrading ankeny-grh / miller-grh | GRH | U |
+| 13 | Explicit `L(1,χ)` and class-number bounds (LLS) | GRH | U |
+| 14 | Erdős 233, sum of squared prime gaps | RH | U |
+| 15 | Littlewood's `log ζ(1/2+it) ≪ log t / log log t` | RH | U |
+| 16 | Riesz and Hardy–Littlewood criteria | RH | U |
+
+Revised order: #2 first, with #7 Mills on top of it, and #5 Cramér following almost directly.
+In parallel, zero counting leads to #8 and then #9. See [`docs/NEXT_TARGETS.md`](docs/NEXT_TARGETS.md).
 
 Out of reach even with riemann-hypothesis: unconditional Artin (needs RH for non-abelian
 Kummer-field zeta functions), and Gilbreath, binary Goldbach, twin primes, Legendre and

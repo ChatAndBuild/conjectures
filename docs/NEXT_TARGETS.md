@@ -87,14 +87,130 @@ only if that computation can be done in `native_decide` chunks with a sound chec
 it lands at tier H, like grosswald-grh's range. (`calr3/ternary-goldbach` exists but assumes
 binary Goldbach up to `4·10^18`.)
 
+## Round 2 (2026-11-24): revisions to the list above
+
+A second research pass, filtered the same way, changed four things:
+
+- **#2 von Koch / Schoenfeld moves to the front.** Mills (#7) and Nicolas (#11) are built on it.
+- **#5 Cramér folds into #2.** Dudek ([arXiv:1402.6417](https://arxiv.org/abs/1402.6417), Thm 2):
+  under RH there is a prime in `(x − (4/π)√x log x, x]` for `x ≥ 2`, which follows almost directly
+  from the explicit `π(x) − li(x)` bound.
+- **#3: target Lamzouri–Li–Soundararajan, not Bach–Sorenson.** LLS (Math. Comp. 84 (2015),
+  [arXiv:1309.3595](https://arxiv.org/abs/1309.3595)) Cor 1.2 gives `P(a,q) ≤ (φ(q) log q)²` for
+  `q > 3`, which is stronger.
+- **#1 Weinberger: a cheaper finite check.** If `h(−q) = 1`, every prime below `q/4` is inert, and
+  LLS Thm 1.4 bounds the least split prime, which caps `q`. LLS also gives `h(−q) ≥ 9053` for
+  `q ≥ 10^11` under GRH.
+
+## Round 2: new candidates
+
+| # | Target | Input | formal-conjectures statement | Expected tier | Effort |
+|---|---|---|---|---|---|
+| 7 | Mills' constant: `A ∈ (1.3063778838, 1.3063778839)` | RH | `Wikipedia/Mills.lean`, `Mills.lower_bound_of_RH` | U | S, after #2 |
+| 8 | Density hypothesis | RH | `Wikipedia/DensityHypothesis.lean`, **research open** | U | S–M |
+| 9 | Li's criterion, RH ⇒ `λ_n > 0` | RH | `Paper/RiemannHypothesisEquivalents.lean`, `li_criterion_rhs`, **research open** | U | M |
+| 10 | Mertens `M(x) = O(x^{1/2+ε})`, with Redheffer and Franel–Landau as corollaries | RH | none | U | M–L |
+| 11 | Nicolas' criterion (the φ version of Robin) | RH | none | U, if the small range fits | M–L |
+| 12 | LLS upgrade of ankeny-grh / miller-grh (constant near 1 instead of `21/5`) | GRH | none | U | M |
+| 13 | Explicit Littlewood bounds for `L(1,χ)` and class numbers | GRH | none | U | M–L |
+| 14 | Erdős 233, upper bound: `Σ_{n<N} gap_n² = O(N log⁴ N)` | RH | `ErdosProblems/233.lean`, `erdos_233.variants.upper_bound` | U | L |
+| 15 | Littlewood's bound `log ζ(1/2+it) ≪ log t / log log t` | RH | none | U | M |
+| 16 | Riesz and Hardy–Littlewood criteria | RH | none | U | S–M, after #10 |
+
+Statements the research could not confirm against the primary source are marked *(unverified)*.
+Check them before fixing a `Statement.lean`.
+
+### 7. Mills' constant
+
+Caldwell–Cheng, J. Integer Seq. 8 (2005), Art. 05.4.1, Thm 1, through Lemma 5: under RH there is
+a prime between `x³` and `(x+1)³`, via Schoenfeld's bound for `x ≥ 2657`, i.e. #2. The lower bound
+needs no RH: `q_n ≥ P_n` for the greedy sequence 2, 11, 1361, 2521008887. The upper bound needs
+the greedy limit to be a Mills number, which is where primes between cubes come in.
+`P₄^{1/81} = 1.30637788386308…` and `(P₄+1)^{1/81} = 1.30637788386947…` both lie inside the
+target interval. The finite work is one primality certificate, six compositeness checks and two
+rational 81st-power comparisons, all within `norm_num` / `decide` range. Wikipedia-level, with a
+ready statement.
+
+### 8. Density hypothesis
+
+Under RH, `N(σ,T) = 0` for `σ > 1/2`. At `σ = 1/2` only `N(T) ≪ T log T` is needed (Riemann–von
+Mangoldt; Titchmarsh ch. 9 *(section unverified)*). It reuses erdos-985's `XiGrowth` with
+Mathlib's Jensen formula (`Analysis/Complex/JensenFormula.lean`). formal-conjectures'
+`zeroCountOn` counts multiplicity, which Jensen handles. The zero-counting lemma is shared with
+#9 and #14, so build it once as a library.
+
+### 9. Li's criterion (RH ⇒ positivity)
+
+Li, J. Number Theory 65 (1997) 325–333; Bombieri–Lagarias, JNT 77 (1999) 274–287. Under RH,
+`|1 − 1/ρ| = 1`, so each term is `2(1 − cos nθ_ρ) ≥ 0`. Missing: summability from
+`Σ 1/|ρ|² < ∞`, and, for strict positivity, infinitely many zeros. Mathlib has no theorem that
+ζ has any zero; erdos-985's Hadamard factorisation plus the Γ growth of `ξ` supplies one.
+formal-conjectures' `lambda` sums over a set, ignoring multiplicity, which is harmless here.
+
+### 10. Mertens function
+
+Littlewood, C. R. Acad. Sci. 154 (1912) 263–266 *(attribution from surveys)*. Redheffer's
+`det R_n = M(n)` *(1977; venue unverified)* and Franel–Landau (Gött. Nachr. 1924) come almost
+free afterwards. Needs `1/ζ ≪ |t|^ε` on `σ ≥ 1/2 + δ`, which lindelof-rh's log-ζ /
+Borel–Carathéodory work should reach, and a **sharp-cutoff Perron formula**, which Mathlib
+lacks. erdos-985's smoothed Perron stops at `x^{3/4+ε}`, the same barrier robin-rh hit with `ψ`.
+This is the most famous RH equivalence on the list.
+
+### 11. Nicolas' criterion
+
+`N_k/φ(N_k) > e^γ log log N_k` for every primorial `N_k` (Nicolas, JNT 17 (1983) 375–388
+*(theorem number unverified)*; restated in Acta Arith. 155 (2012)). Uses Schoenfeld's
+`|θ(x) − x| ≤ √x log²x/(8π)` for `x ≥ 599`, `θ(x) < x` below `8·10^11`, and
+`Σ 1/(ρ(1−ρ)) = 2 + γ − log 4π`. Reuses robin-rh's Mertens estimates and #2. The size of the
+finite check is not yet established; probably `≤ 10^8`.
+
+### 12. LLS upgrade of ankeny-grh and miller-grh
+
+LLS Thm 1.1: for `q ≥ 3000`, the least prime `ℓ ∤ q` outside a proper subgroup is
+`≤ (log q + B(q))²`. Thm 1.4 (`q ≥ 20000`) handles cosets, including the least prime quadratic
+residue. This replaces ankeny-grh's `21/5`, which is weaker than Bach's own `2`, with a constant
+near 1. The `q < 3000` check is trivial. Deterministic Tonelli–Shanks (polynomial-time square
+roots mod `p` under GRH) is a free corollary.
+
+### 13. Explicit `L(1,χ)` and class-number bounds
+
+LLS Thm 1.5 and Cor 1.3, for `q ≥ 10^10`: `|L(1,χ)| ≤ 2e^γ(log log q − log 2 + 1/2 + 1/log log q)`,
+a matching lower bound, and `h(−q) ≥ (π/(12e^γ)) √q / (log log q + …)`. Also an input to #1.
+
+### 14. Erdős 233 (upper bound)
+
+Selberg, Arch. Math. Naturvid. 47 (1943): the mean-square lemma
+`∫|θ(y+δy) − θ(y) − δy|² ≪ δx² log² x` is confirmed. The exact `Σ d_n²` form, and
+formal-conjectures' attribution to Cramér, are *unverified*. Explicit version: Cully-Hugill–Dudek,
+[arXiv:2206.00433](https://arxiv.org/abs/2206.00433). Needs a Gallagher/Plancherel mean-value
+lemma and #8's zero counting.
+
+### 15. Littlewood's strong Lindelöf bound
+
+`log|ζ(1/2+it)| ≤ C log t / log log t`. Littlewood 1924 gives an unspecified `C`
+*(Titchmarsh §14.14, unverified)*, which is the realistic target and extends lindelof-rh. The
+sharp `(log 2)/2 + o(1)` is Chandee–Soundararajan, Bull. LMS 43 (2011), Thm 1.1 (effort L).
+
+### 16. Riesz and Hardy–Littlewood criteria
+
+Under RH, the Riesz function is `O(x^{1/4+ε})` (Riesz, Acta Math. 40 (1916)), and
+`Σ μ(n)/n · e^{−x/n²} = O(x^{−1/4+ε})` (Hardy–Littlewood, Acta Math. 41 (1916)). Both are
+Mellin–Barnes contour shifts once #10's `1/ζ` bound exists. They are smoothed by nature, so no
+sharp-cutoff Perron is needed.
+
 ## Recommended order
 
-1. **Now, in parallel:** #4 (statement exists) and #3 (closest to existing code). Both are short
-   and reuse erdos-985 and ankeny-grh almost directly.
-2. **Scoping spike:** #1, to settle whether the class-group statements can be written against the
-   Mathlib pin. This decides whether the most valuable target is weeks of work or a Mathlib
-   project.
-3. **Then:** #2, followed by #5.
+Revised in round 2:
+
+1. **#2 von Koch / Schoenfeld**, then **#7 Mills**, a quick win with a ready formal-conjectures
+   statement. **#5 Cramér** falls out of #2 via Dudek.
+2. **In parallel:** zero counting `N(T) ≪ T log T` as a shared library, then **#8 density
+   hypothesis**, then **#9 Li's criterion**. That settles two *open* formal-conjectures entries.
+3. **#4 Dirichlet-L Lindelöf** (the statement is stubbed) and **#3 / #12** least primes via LLS,
+   which upgrades ankeny-grh and miller-grh at the same time.
+4. **Scoping spike on #1 Weinberger**, using LLS's split-prime bound to shrink the computation.
+5. **Later:** #10 Mertens (which needs a sharp-cutoff Perron), then #16; #11 Nicolas; #13;
+   #15; #14.
 
 Use the workflow that worked for lindelof-rh: fix every step's Lean statement in
 `<Pkg>/Statement.lean` and prove the assembly first, then run parallel agents on one step each,
@@ -114,6 +230,19 @@ Kept so the next search doesn't rediscover these and argue about them again.
   (`5040 < n ≤ exp(e^30)`) and Cohen–Oliveira e Silva–Trudgian (`409 < p ≤ 2.5·10^15`, about
   7·10^13 primes) are far beyond `native_decide`. The only route to tier U is a new argument that
   lowers the analytic threshold. See their checklist items in `AGENTS.md`.
+- **Weil positivity and Beurling–Nyman** (formal-conjectures `_rhs` forms). The RH ⇒ criterion
+  direction needs the full Weil explicit formula for `C_c^∞` test functions, or the hard
+  direction of Nyman–Beurling. XL.
+- **Knapowski–Turán refutation** (Kaczorowski, Analysis 15 (1995)). Needs oscillation theorems and
+  certified zero data for `L(s, χ₄)`.
+- **Montgomery pair correlation and zeta-moment asymptotics.** Not consequences of RH.
+  **Rubinstein–Sarnak** needs the linear independence hypothesis (LI).
+- **Euclidean rings of integers (Weinberger 1973) and Breuillard–Varjú.** Need GRH for Dedekind
+  zeta of non-abelian fields.
+- **Lagarias's criterion.** Already proved as `lagarias_of_RH` in robin-rh. Upstream it to
+  formal-conjectures (`lagarias_criterion_rhs` / `robin_criterion_rhs`) rather than redoing it.
+- **Báez-Duarte criterion.** No formal-conjectures statement, and less famous; fold it into #16 if
+  wanted.
 
 ## See also
 
