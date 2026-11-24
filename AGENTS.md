@@ -308,7 +308,7 @@ Each README follows the shape already used across these repos:
       any `x₀ ≤ 2521008887` (PR #1, open)
 - [ ] Discharge `PrimeBetweenCubes` from Schoenfeld's bound once schoenfeld-rh is on `main`
 
-### hironaka-fc: Hironaka's resolution of singularities in characteristic 0 · **tier U₀, complete, verified** · *known*
+### hironaka-fc: Hironaka's resolution of singularities in characteristic 0 · **tier U₀, complete on PR #1 (open), verified** · *known*
 - [x] Statement matches formal-conjectures `resolution_of_singularities_of_charZero` verbatim
 - [x] `hironaka_of_smoothModification` (H; input `SmoothModification`, Mathlib objects only), no
       `sorry`, standard three only
