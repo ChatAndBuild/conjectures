@@ -18,6 +18,25 @@ Tiers: **D** direct, **U** unconditional through
 [riemann-hypothesis](https://github.com/leanprover-community/riemann-hypothesis), **C** conditional
 on RH/GRH, **H** cited result taken as a hypothesis. See `AGENTS.md`.
 
+## Next targets
+
+Candidates whose analytic input is only RH for ζ or GRH for Dirichlet L, so they can reach
+tier U. Details, the expected tier of each, and rejected candidates are in
+[`docs/NEXT_TARGETS.md`](docs/NEXT_TARGETS.md).
+
+| # | Target | Input | Expected tier |
+|---|---|---|---|
+| 1 | Euler's idoneal numbers and class number one (Weinberger 1973) | GRH | U |
+| 2 | von Koch / Schoenfeld bound for `π(x) − li(x)` | RH | U, if the small range fits |
+| 3 | Least prime in an arithmetic progression (Bach–Sorenson 1996) | GRH | U |
+| 4 | Lindelöf for Dirichlet L-functions (stubbed in lindelof-rh) | GRH | U |
+| 5 | Cramér's prime-gap theorem (1920) | RH | U |
+| 6 | Ternary Goldbach (Deshouillers–Effinger–te Riele–Zinoviev 1997) | GRH | U or H, depending on the computation |
+
+Out of reach even with riemann-hypothesis: unconditional Artin (needs RH for non-abelian
+Kummer-field zeta functions), and Gilbreath, binary Goldbach, twin primes, Legendre and
+Cramér's conjecture, which RH does not imply.
+
 ```bash
 git clone --recurse-submodules https://github.com/senamakel/conjectures
 ```
