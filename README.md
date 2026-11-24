@@ -4,8 +4,9 @@ The tracking superproject for the Lean 4 formalisations of conjectures condition
 Each project is a submodule pinned to the commit last reviewed. [`AGENTS.md`](AGENTS.md) holds
 the status checklist, the proof-tier rules (when a result counts as a direct proof) and the README rules.
 
-**None of this is new mathematics.** Every result is a theorem already in the literature, proved
-outright or assuming RH/GRH; the repos formalise it in Lean. Tier U results rest on the RH proof
+**Almost none of this is new mathematics.** With one possible exception (erdos-985, see below),
+every result is a theorem already in the literature, proved outright or assuming RH/GRH; the
+repos formalise it in Lean. Tier U results rest on the RH proof
 in riemann-hypothesis, which has not been independently verified.
 The last column says how each result stands in the literature; the labels are defined in
 [`AGENTS.md`](AGENTS.md) and the attributions are in
@@ -13,7 +14,7 @@ The last column says how each result stands in the literature; the labels are de
 
 | Submodule | Result | Tier | In the literature |
 |---|---|---|---|
-| [erdos-985](https://github.com/senamakel/erdos-985) | every odd prime has a prime primitive root `q < p` | U | RH-consequence |
+| [erdos-985](https://github.com/senamakel/erdos-985) | every odd prime has a prime primitive root `q < p` | U | RH-consequence, first proved here (unreviewed); candidate for **new**, pending the user |
 | [ankeny-grh](https://github.com/senamakel/ankeny-grh) | Bach's Ankeny bound, constant `21/5` | U | RH-consequence |
 | [miller-grh](https://github.com/senamakel/miller-grh) | deterministic Miller–Rabin, `4.2 log² n` bases | U | RH-consequence |
 | [lindelof-rh](https://github.com/senamakel/lindelof-rh) | Lindelöf hypothesis for ζ and for Dirichlet L-functions | U | RH-consequence |

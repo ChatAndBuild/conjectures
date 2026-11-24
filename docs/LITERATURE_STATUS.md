@@ -2,8 +2,8 @@
 
 Written 2026-11-24. Read this before describing any result in this workspace to anyone.
 
-**Nothing in this workspace is new mathematics.** Every target, finished or planned, is a theorem
-already in the literature, either proved outright or proved assuming RH or GRH. What the repos
+**With one possible exception (erdos-985, below), nothing in this workspace is new mathematics.**
+Every other target, finished or planned, is a theorem already in the literature, either proved outright or proved assuming RH or GRH. What the repos
 add is a machine-checked Lean proof of a standard formal statement. The three groups below say
 what kind of claim each result supports. Literature attributions are from memory unless a brief
 in [`NEXT_TARGETS.md`](NEXT_TARGETS.md) marks them confirmed: check the primary source before
@@ -63,7 +63,6 @@ Each is a published conditional theorem. The main library formalises it (tier C)
 | grosswald-grh | Cohen–Oliveira e Silva–Trudgian 2016 |
 | lindelof-rh, Lindelöf for ζ and Dirichlet L | classical; Littlewood |
 | artin-grh, Artin's conjecture under GRH for Kummer fields | Hooley 1967. Stays tier C: the RH repo does not cover those fields |
-| erdos-985 | the GRH proof's attribution is not recorded here: **find it before citing** |
 | #1 weinberger-grh, idoneal numbers | Weinberger 1973 |
 | #2 schoenfeld-rh, #5 cramer-rh | von Koch 1901, Schoenfeld 1976; Cramér 1920 |
 | mills-rh, the enclosure of Mills' constant | Caldwell–Cheng 2005 |
@@ -72,6 +71,29 @@ Each is a published conditional theorem. The main library formalises it (tier C)
 | #14 erdos-233, upper bound | Cramér 1936, Selberg 1943 |
 | #15 littlewood-rh | Littlewood 1924 |
 | #24 ERH for abelian number fields | standard: equivalent to GRH for Dirichlet L-functions |
+
+## The one candidate for "new": erdos-985
+
+Erdős Problem 985 (every odd prime `p` has a prime primitive root `q < p`) is open. The
+implication "GRH implies Erdős 985" is proved in this workspace: in Lean (`erdos_985_of_GRH`)
+and in the repo's own paper, `paper/erdos985.pdf` (November 2026). Its method is credited to
+Bach's explicit bounds on weighted prime sums, through Lemma 1 of McGown–Treviño–Trudgian,
+*Resolving Grosswald's conjecture on GRH* (arXiv:1508.05182). Neither session knows of an
+earlier published proof of the implication itself.
+
+What that supports, and what it doesn't:
+
+- If no earlier proof exists, "GRH implies Erdős 985" is a new **conditional** theorem. That is
+  a real, modest result, and it stands whatever happens to the RH repo.
+- It is not a solution of Erdős 985. The unconditional statement still rests on the unverified
+  RH proof, like everything in group B.
+- "No earlier proof exists" has not been checked. Before the label **new** is used: search the
+  literature (erdosproblems.com's page for 985 and its references, MathSciNet/zbMATH for
+  primitive roots under GRH, the papers citing arXiv:1508.05182), and have the paper read by
+  someone outside the project. McGown–Treviño–Trudgian prove a prime primitive root below
+  `√p − 2` for large `p` under GRH, which is close to this statement; check whether their
+  result with a finite computation already gives it.
+- The label is the user's decision.
 
 ## Group C: statements equivalent to RH (label **RH-equivalent**)
 
@@ -88,7 +110,8 @@ to announce.
 
 ## Is anything a genuine solution?
 
-No, not yet, in the sense of an open problem settled by an argument that is ours.
+No open problem is settled by an argument that is ours. One conditional theorem may be new:
+"GRH implies Erdős 985" (see above).
 
 - Three rounds of search found no open problem that follows from the RH repo's lemmas by a new
   argument. Every open statement we can reach (idoneal numbers, the density hypothesis, the

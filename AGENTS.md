@@ -119,8 +119,10 @@ Rules:
 
 ## Literature status: label every result
 
-Nothing in this workspace is new mathematics. Every result is already a theorem in the
-literature; what is new is the Lean proof. So each result carries a second label next to its
+With one possible exception, nothing in this workspace is new mathematics: every result is
+already a theorem in the literature, and what is new is the Lean proof. The exception is
+erdos-985, whose implication "GRH implies Erdős 985" has no earlier publication we know of
+(see `docs/LITERATURE_STATUS.md`); whether it gets the **new** label is the user's call. So each result carries a second label next to its
 tier, saying how it stands in the literature. The label goes in the README table, in the
 checklist heading below, and in the opening paragraph of the repo's README (README rule 13).
 Attributions are in [`docs/LITERATURE_STATUS.md`](docs/LITERATURE_STATUS.md).
@@ -131,7 +133,7 @@ Attributions are in [`docs/LITERATURE_STATUS.md`](docs/LITERATURE_STATUS.md).
 | **known, via GRH here** | Proved in the literature with no hypothesis, but our proof assumes RH or GRH. Ours is the weaker result | "X under GRH, in Lean; X itself is a theorem of (author, year)" |
 | **RH-consequence** | A published theorem of the form "RH/GRH implies X", with X open otherwise | main library: "GRH implies X, following (author, year)"; `Unconditional/`: "X, given the unverified Lean proof of RH/GRH in riemann-hypothesis" |
 | **RH-equivalent** | X is known to be equivalent to RH, so an unconditional X says nothing beyond the RH claim | as RH-consequence, and say it is equivalent |
-| **new** | An open problem settled by an argument of ours. **No result has this label** | needs the user's sign-off before any README uses it |
+| **new** | An open problem settled, or a new conditional theorem proved, by an argument of ours. **No result has this label yet**; erdos-985 is the one candidate | needs the user's sign-off before any README uses it |
 
 Rules:
 
@@ -204,7 +206,7 @@ Each README follows the shape already used across these repos:
 
 ## Per-repo checklist
 
-### erdos-985: every odd prime has a prime primitive root `q < p` · **tier U, complete, verified** · *RH-consequence*
+### erdos-985: every odd prime has a prime primitive root `q < p` · **tier U, complete, verified** · *RH-consequence, first proved here (unreviewed); candidate for new, pending the user*
 - [x] Statement matches formal-conjectures `erdos_985` verbatim
 - [x] `erdos_985_of_GRH` (C), no `sorry`
 - [x] `Unconditional/`: `erdos_985` (U), standard three + 20 `native_decide`. The `sorryAx` seen
