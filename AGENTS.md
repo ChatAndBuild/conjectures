@@ -30,7 +30,9 @@ server (`https://livingbrain.fernmcp.dev/livingbrain`, configured in `~/.claude.
 ### Ingestion
 
 `scripts/lb_ingest.py` keeps the brain in step with the repos. For each submodule's remote
-default branch, and for this superproject's `AGENTS.md` and `README.md`, it captures:
+default branch, and for this superproject's `AGENTS.md`, `README.md` and everything under
+`docs/` (read from the working tree; a file over 45,000 characters is sent in parts, because
+LivingBrain rejects content over 50,000), it captures:
 - documentation (`README.md`, `AGENTS.md`, `docs/*.md`, `paper/README.md`) whenever its content changes;
 - new commit messages: the history of attempts, one note per repo per run;
 - every PR, in any state, re-captured when it's updated. A PR closed without merging is
@@ -81,6 +83,7 @@ Each headline theorem has exactly one tier, and the README must say which.
 | **D** | Direct | A closed statement with no hypotheses, proved inside the repo without importing riemann-hypothesis | standard three + documented `native_decide` |
 | **U** | Unconditional via RH | `Unconditional/<X>Unconditional.lean` imports riemann-hypothesis and closes the RH/GRH hypothesis in one line | same as D; the README carries the trust caveat |
 | **C** | Conditional | RH/GRH (or another open conjecture) is an explicit argument of the main-library theorem | same as D |
+| **U₀** | Unconditional via an RH-repo lemma | `Unconditional/` imports riemann-hypothesis for a lemma that does not depend on RH (Siegel–Walfisz, Linnik, class field theory, resolution of singularities, …) and discharges it in one line. No RH or GRH hypothesis is involved | same as D; the README carries the trust caveat |
 | **H** | Cited hypothesis | A known result we don't re-prove (a large computation, a theorem missing from Mathlib) appears as an explicit `Prop` argument | same as D |
 
 Rules:
@@ -107,7 +110,7 @@ Rules:
    README, pasted from real output. Allowed: `propext`, `Classical.choice`, `Quot.sound`, and
    `*._native.native_decide.ax_*`. Each `native_decide` needs a soundness proof for its checker
    and its count in the README. No `axiom` or `opaque` declarations for mathematical content.
-6. **"Done" means tier D or U for the full target statement**, with every remaining H
+6. **"Done" means tier D, U or U₀ for the full target statement**, with every remaining H
    hypothesis named. A repo whose best result is C or H is not done. It is done as far as it can
    go only when its README explains why no unconditional version is possible (artin-grh).
 7. **Pins must resolve.** Every `[[require]]` rev must exist on the remote's default branch, and

@@ -34,7 +34,7 @@ SOURCE = {"channel": "claude-code", "label": "RH formalization repos", "ref": "c
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_STATE = Path.home() / ".local/state/conjectures-lb-ingest.json"
 DOC_GLOBS = ["README.md", "AGENTS.md", "docs/*.md", "paper/README.md"]
-MAX_DOC = 60_000
+MAX_DOC = 45_000  # LivingBrain rejects content over 50,000 characters
 OWNER = "senamakel"
 
 
@@ -225,6 +225,30 @@ def collect_superproject(state: dict) -> list[dict]:
             f"https://github.com/{OWNER}/conjectures/blob/main/{f}#{digest}",
             f"The conjectures tracking superproject ({OWNER}/conjectures), {f}: the programme's "
             f"status checklist, proof-tier rules and README rules.\n\n{text}"))
+        st[f] = digest
+
+    # docs/: target lists and the riemann-hypothesis lemma inventories. A long file is sent in
+    # parts, split on line boundaries, so nothing is truncated.
+    for p in sorted((ROOT / "docs").rglob("*.md")):
+        f = p.relative_to(ROOT).as_posix()
+        text = p.read_text()
+        digest = h(text)
+        if st.get(f) == digest:
+            continue
+        parts, cur = [], ""
+        for line in text.splitlines(keepends=True):
+            if cur and len(cur) + len(line) > MAX_DOC:
+                parts.append(cur)
+                cur = ""
+            cur += line
+        parts.append(cur)
+        for i, part in enumerate(parts, 1):
+            tag = f" (part {i}/{len(parts)})" if len(parts) > 1 else ""
+            items.append(capture(
+                f"conjectures: {f}{tag}",
+                f"https://github.com/{OWNER}/conjectures/blob/main/{f}#{digest}-{i}",
+                f"The conjectures tracking superproject ({OWNER}/conjectures), {f}{tag}: research "
+                f"notes on targets and on what the riemann-hypothesis repo proves.\n\n{part}"))
         st[f] = digest
     return items
 
