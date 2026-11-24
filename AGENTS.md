@@ -161,7 +161,7 @@ Each README follows the shape already used across these repos:
       (98 GB cache at `~/work/personal/riemann-hypothesis`, linked from the community cache, not
       rebuilt from source): erdos-985 `57436d3`, ankeny-grh `dcc7a79`, miller-grh `81154df`,
       lindelof-rh `3975bbb` (one rename-only commit before the merged head), artin-grh `53073d1`,
-      li-criterion-rh `f058257`, bach-sorenson-grh `2242e96`. No `sorryAx` in any log.
+      li-criterion-rh `f058257`, bach-sorenson-grh `2242e96`, density-rh `637fd12`. No `sorryAx` in any log.
       The shell's hard open-file limit (524288) is too low for the import: run
       `sudo prlimit --pid $$ --nofile=2000000:2000000` first. Up to four checks fit in RAM at once.
 - [ ] No repo has a `LICENSE` file, and riemann-hypothesis has no licence either. Decide on a
@@ -251,6 +251,17 @@ Each README follows the shape already used across these repos:
       (every class for `q < 2^15`, proved-sound checker)
 - [ ] Open: the paper's constant `2` (same barrier as ankeny-grh)
 
+### density-rh: zero counting and the density hypothesis · **tier U (library tier D), complete, verified**
+- [x] Zero-counting library `Density.ZeroCount`, unconditional (D), standard three only:
+      `N(T) ≪ T log T` (`zeroCountOn_riemannZeta_le_of_subset_strip`) and
+      `N(T+1) − N(T) ≪ log T` (`zeroCountOn_riemannZeta_le_of_subset_box`), with multiplicity.
+      Other repos require density-rh for it instead of copying `Complex.zeroCountOn`
+- [x] `densityHypothesis_of_RH` (C) and `Unconditional/` `density_hypothesis` (U), standard three
+      only; statement verbatim from formal-conjectures `density_hypothesis_zeta_zeros` (open there).
+      Checked 2026-11-24 at `637fd12`. Under RH the count is zero for `σ > 1/2`, and `σ = 1/2`
+      is the unconditional `N(T)` bound
+- [ ] In progress: `guth_maynard_zero_density` (the 30/13 statement) as a corollary
+
 ### mills-rh: Mills' constant in `(1.3063778838, 1.3063778839)` · **lower bound tier D; enclosure C + H; in progress**
 - [x] `mills_lower_bound` (D), standard three only; statements verbatim from formal-conjectures
 - [x] `mills_bounds_of_primeBetweenCubes` from the single hypothesis `PrimeBetweenCubes x₀`,
@@ -263,7 +274,6 @@ Scaffolded 2026-11-24, one agent each on branch `finality`; the gitlink is the s
 - [ ] schoenfeld-rh: `|π(x) − li(x)| < √x log x/(8π)` under RH (#2); target statements fixed
 - [ ] cramer-rh: Cramér's prime-gap theorem under RH (#5)
 - [ ] goldbach-grh: ternary Goldbach under GRH (#6)
-- [ ] density-rh: zero counting `N(T) ≪ T log T` and the density hypothesis (#8)
 - [ ] mertens-rh: `M(x) = O(x^{1/2+ε})`, plus Riesz and Hardy–Littlewood (#10, #16)
 - [ ] nicolas-rh: Nicolas' primorial inequality (#11)
 - [ ] lls-grh: Lamzouri–Li–Soundararajan least primes and `L(1,χ)` bounds (#12, #13)

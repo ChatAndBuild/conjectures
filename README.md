@@ -12,6 +12,7 @@ the status checklist, the proof-tier rules (when a result counts as a direct pro
 | [lindelof-rh](https://github.com/senamakel/lindelof-rh) | Lindelöf hypothesis for ζ and for Dirichlet L-functions | U |
 | [li-criterion-rh](https://github.com/senamakel/li-criterion-rh) | Li's criterion, positivity direction: `λ_n > 0` for `n ≥ 1` | U |
 | [bach-sorenson-grh](https://github.com/senamakel/bach-sorenson-grh) | least prime `p ≡ a (mod q)` is `< (7/2)(q log q)²` | U |
+| [density-rh](https://github.com/senamakel/density-rh) | density hypothesis for ζ; zero counting `N(T) ≪ T log T` (the latter with no hypothesis) | U (library D) |
 | [grosswald-grh](https://github.com/senamakel/grosswald-grh) | Grosswald's conjecture | U for `p > 2.5·10^15`, H below |
 | [robin-rh](https://github.com/senamakel/robin-rh) | Robin's inequality | U + H (Morrill–Platt range) |
 | [artin-grh](https://github.com/senamakel/artin-grh) | Hooley's conditional Artin theorem, Hecke's continuation discharged | C (GRH for the Kummer fields) |
@@ -26,7 +27,6 @@ In progress (scaffolded, nothing verified yet):
 [schoenfeld-rh](https://github.com/senamakel/schoenfeld-rh),
 [cramer-rh](https://github.com/senamakel/cramer-rh),
 [goldbach-grh](https://github.com/senamakel/goldbach-grh),
-[density-rh](https://github.com/senamakel/density-rh),
 [mertens-rh](https://github.com/senamakel/mertens-rh),
 [nicolas-rh](https://github.com/senamakel/nicolas-rh),
 [lls-grh](https://github.com/senamakel/lls-grh),
@@ -52,7 +52,7 @@ tier U. Details, the expected tier of each, and rejected candidates are in
 | 5 | Cramér's prime-gap theorem (1920) | RH | U |
 | 6 | Ternary Goldbach (Deshouillers–Effinger–te Riele–Zinoviev 1997) | GRH | U or H, depending on the computation |
 | 7 | Mills' constant `A ∈ (1.3063778838, 1.3063778839)` (Caldwell–Cheng 2005) | RH | U |
-| 8 | Density hypothesis (open in formal-conjectures) | RH | U |
+| 8 | Density hypothesis (open in formal-conjectures) | RH | **done**, U (density-rh) |
 | 9 | Li's criterion, RH ⇒ `λ_n > 0` (open in formal-conjectures) | RH | **done**, U (li-criterion-rh) |
 | 10 | Mertens `M(x) = O(x^{1/2+ε})`, Redheffer, Franel–Landau | RH | U |
 | 11 | Nicolas' criterion (the φ version of Robin) | RH | U, if the small range fits |
