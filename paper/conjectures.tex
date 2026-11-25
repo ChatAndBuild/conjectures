@@ -300,17 +300,30 @@ The sample also shows what the atlas could not do. Rank alone would not have cho
 
 \subsection*{What the loop may not do} A loop that can change itself will find ways to pass that are not improvements, so three things are out of its reach. The scorer runs in our code. The constitution lists what no edit may break. Edits outside the editable paths fail the candidate before it is scored. A language model may act as a judge, but only to hold a candidate back; it can never accept one. Every model call goes through a gateway that stops the run at its spending cap.
 
-\subsection*{The mathematical version} \trepo{supermath} \cite{supermath} turns one conjecture into one loop folder. The statement is frozen, and the seats are a lead, a prover and a refuter. Prover and refuter each work in their own checkout, so the attempt to disprove runs beside the attempt to prove. A candidate's score is a ladder:
-\[
-\text{score}=
-\begin{cases}
-1 & \text{Lean accepts the pinned statement, or its negation, with no debt;}\\
-0.75 & \text{it accepts, but with debt;}\\
-0.2+\dfrac{0.3}{1+g} & \text{the best side elaborates, with } g \text{ gaps (uses of Lean's \lean{sorry});}\\[2mm]
-\dfrac{0.1}{1+e} & \text{it does not elaborate, with } e \text{ errors.}
-\end{cases}
-\]
-Here \lean{sorry} is a Lean keyword. It stands in for a missing proof: Lean accepts the file with a warning, checks everything around the hole, and records that the theorem depends on an unproved step. Counting uses of \lean{sorry} therefore counts the steps still to be proved, and a theorem is finished only when none is left, in it or in anything it relies on. The empty template has one \lean{sorry} on each side and scores $0.35$, so filling gaps moves the score before the problem is settled. The scorer does not trust the candidate's own theorem. It writes a fresh file that states the conjecture at its exact type and asks Lean whether the candidate's proof fits. For larger targets the ladder is a list of intermediate Lean statements, each with a weight.
+\subsection*{The mathematical version} \trepo{supermath} \cite{supermath} turns one conjecture into one loop folder. The statement is frozen, and the seats are a lead, a prover and a refuter. Prover and refuter each work in their own checkout, so the attempt to disprove runs beside the attempt to prove. After each attempt the scorer asks Lean how far the candidate got, and gives it a number between 0 and 1 (Table~\ref{tab:ladder}).
+
+\begin{table}[ht]
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+What Lean reports & Score & Example\\
+\midrule
+The conjecture, or its negation, is fully proved & $1$ & $1$\\
+\addlinespace
+The same, but a step trusts Lean's compiler & $0.75$ & $0.75$\\
+\addlinespace
+The file compiles, with $g$ uses of Lean's \lean{sorry} & $0.2+\dfrac{0.3}{1+g}$ & $g=1$: $0.35$;\quad $g=4$: $0.26$\\
+\addlinespace
+The file does not compile, with $e$ errors & $\dfrac{0.1}{1+e}$ & $e=1$: $0.05$;\quad $e=9$: $0.01$\\
+\bottomrule
+\end{tabular}
+\medskip
+\caption{How a candidate is scored. Higher rows are always worth more than lower ones. When neither side is settled, the better of the prover's and the refuter's files counts.}\label{tab:ladder}
+\end{table}
+
+Two terms need explaining. The first is \lean{sorry}, a Lean keyword that stands in for a missing proof. Lean accepts the file with a warning, checks everything around the hole, and records that the theorem depends on an unproved step. So $g$ is the number of steps still to be proved, and a theorem is finished only when no \lean{sorry} is left, in it or in anything it relies on. The second is trust in the compiler. A step proved by \lean{native\_decide} is evaluated by compiled code, which Lean's kernel does not recheck, so this ladder gives it less than full marks until it is replaced. (The seventeen developments allow such steps for large finite checks, and list each one among their axioms.)
+
+The ladder gives the loop something to climb. The empty template has one \lean{sorry} on each side and scores $0.35$. For a file split into four missing steps the ladder gives $0.26$, then $0.275$ with three left, $0.3$ with two and $0.35$ with one, so each step that is proved counts before the problem is settled. The scorer does not trust the candidate's own theorem. It writes a fresh file that states the conjecture at its exact type and asks Lean whether the candidate's proof fits. For larger targets the ladder is a list of intermediate Lean statements, each with a weight.
 
 \subsection*{Once the harness was good enough} The return came after the first target. By the time Erd\H{o}s 985 was finished, the harness had a way to freeze a statement, split it, search the libraries and the literature, recall what had failed, check finite ranges, and refuse anything Lean would not accept. It also had the analytic toolkit that 985 produced. The next targets started from there, and in our experience they were far easier. The work of a new conjecture shrank to stating it, finding its split and running the loop. In the case studies of Section~\ref{sec:cases}, most targets had a first version within about an hour of an empty repository, several of them in progress on the same day. What remained slow was specific to each target: a large computation, a range that would not close, or a sharper constant. We read this as the loop paying for itself, although some of the gain comes from the shared toolkit and from the proof of RH, and we have not measured the parts separately.
 
