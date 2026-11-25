@@ -172,7 +172,64 @@ Each problem has two scores. One measures how hard it is for mathematicians. The
 \[
 \text{opportunity}=\text{agent fit}-\text{difficulty}.
 \]
-To test the ranking we scored problems that have since been solved, using what was known before the proof. Everything settled between 2019 and 2024, including Ringel's conjecture and Kaplansky's unit conjecture, came out positive. Fermat's Last Theorem and the Poincar\'e conjecture came out negative.
+Table~\ref{tab:atlas} shows a sample, ordered by rank among the 1{,}402 problems that are open or partly resolved. (The other seven unsolved problems are contested or independent of the usual axioms.) The top of the list is combinatorics and graph theory, where an agent can search and a computer can check. Famous problems sink, because their difficulty outweighs their fit. Of the 2{,}196 rows, 104 were scored by hand; the scores of the rest are marked as estimates.
+
+\begin{table}[ht]
+\small
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Problem & Field & Difficulty & Agent fit & Opportunity & Rank\\
+\midrule
+Graceful tree conjecture & graph theory & 47 & 95 & $+48$ & 21\\
+Union-closed sets conjecture & combinatorics & 52 & 96 & $+44$ & 36\\
+Erd\H{o}s-Straus conjecture & number theory & 51 & 93 & $+42$ & 69\\
+Lonely runner conjecture & combinatorics & 51 & 92 & $+41$ & 73\\
+Perfect cuboid & number theory & 56 & 87 & $+31$ & 170\\
+Idoneal numbers$^{*\dagger}$ & number theory & 47 & 72 & $+25$ & 255\\
+Andrews-Curtis conjecture & algebra & 63 & 88 & $+25$ & 261\\
+Collatz conjecture & number theory & 72 & 86 & $+14$ & 637\\
+Erd\H{o}s 985$^{*\dagger}$ & number theory & 49 & 53 & $+4$ & 878\\
+Legendre's conjecture & number theory & 77 & 79 & $+2$ & 944\\
+Erd\H{o}s 770$^{*\dagger}$ & number theory & 46 & 47 & $+1$ & 946\\
+Erd\H{o}s 233$^{*\dagger}$ & number theory & 49 & 50 & $+1$ & 951\\
+Goldbach's conjecture & number theory & 86 & 83 & $-3$ & 1{,}081\\
+Twin prime conjecture & number theory & 82 & 58 & $-24$ & 1{,}281\\
+Riemann hypothesis & number theory & 87 & 62 & $-25$ & 1{,}287\\
+Birch and Swinnerton-Dyer & arithmetic geometry & 85 & 54 & $-31$ & 1{,}317\\
+Lindel\"of hypothesis$^{*}$ & number theory & 78 & 39 & $-39$ & 1{,}341\\
+P versus NP & theoretical CS & 87 & 43 & $-44$ & 1{,}370\\
+Hodge conjecture & algebraic geometry & 83 & 21 & $-62$ & 1{,}397\\
+Langlands functoriality & arithmetic geometry & 85 & 14 & $-71$ & 1{,}402\\
+\bottomrule
+\end{tabular}
+\medskip
+\caption{A sample of the atlas, as scored before the proof of RH. A star marks a row related to one of the seventeen developments, and a dagger marks an estimated score. The atlas scores the whole problem, which for Problems 770 and 233 is more than we proved.}\label{tab:atlas}
+\end{table}
+
+To test the ranking we scored nine problems that have since been settled, using what was known before the proof (Table~\ref{tab:calib}). Six came out positive, all settled since 2019. Fermat's Last Theorem and the Poincar\'e conjecture came out negative. The Duffin-Schaeffer conjecture is the miss: it was settled in the same recent period and scored well below zero.
+
+\begin{table}[ht]
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Problem & Settled & Difficulty & Agent fit & Opportunity\\
+\midrule
+Ringel's conjecture & 2020 & 50 & 88 & $+38$\\
+Kaplansky's unit conjecture & 2021 & 63 & 89 & $+26$\\
+Erd\H{o}s-Faber-Lov\'asz conjecture & 2021 & 60 & 85 & $+25$\\
+Einstein problem & 2023 & 54 & 72 & $+18$\\
+Sensitivity conjecture & 2019 & 63 & 80 & $+17$\\
+Moving sofa problem & 2024 & 44 & 52 & $+8$\\
+Fermat's Last Theorem & 1995 & 85 & 81 & $-4$\\
+Duffin-Schaeffer conjecture & 2019 & 64 & 42 & $-22$\\
+Poincar\'e conjecture & 2003 & 81 & 22 & $-59$\\
+\bottomrule
+\end{tabular}
+\medskip
+\caption{The nine settled problems used to test the ranking.}\label{tab:calib}
+\end{table}
+
+The sample also shows what the atlas could not do. Rank alone would not have chosen our targets: Erd\H{o}s 985 stood at 878 and the Lindel\"of hypothesis near the bottom. They became tractable when RH was proved, and the opportunity score does not model one problem depending on another. That question went to the memory (Section~\ref{sec:memory}).
 
 \section{RSI Ralph: a loop that edits its own team}\label{sec:loop}
 
