@@ -1,401 +1,306 @@
 \documentclass[11pt]{amsart}
 \usepackage[margin=1.15in]{geometry}
-\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{amsmath,amssymb}
 \usepackage{microtype}
 \usepackage[hidelinks]{hyperref}
 \usepackage{booktabs}
 \usepackage{alltt}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
 \emergencystretch=3em
 
-\newtheorem{theorem}{Theorem}
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{lemma}[theorem]{Lemma}
-\theoremstyle{remark}
-\newtheorem{remark}[theorem]{Remark}
-
-\newcommand{\Lam}{\Lambda}
-\newcommand{\ord}{\operatorname{ord}}
-\newcommand{\li}{\operatorname{li}}
-\newcommand{\eps}{\varepsilon}
-\newcommand{\Q}{\mathbb{Q}}
-\newcommand{\Z}{\mathbb{Z}}
-\newcommand{\C}{\mathbb{C}}
-\renewcommand{\Re}{\operatorname{Re}}
-\renewcommand{\Im}{\operatorname{Im}}
 \newcommand{\lean}[1]{\texttt{#1}}
 \newcommand{\repo}[1]{\href{https://github.com/senamakel/#1}{\texttt{#1}}}
+\newcommand{\trepo}[1]{\href{https://github.com/tinyhumansai/#1}{\texttt{#1}}}
+% amsart uppercases the author block; a robust macro keeps the layout intact
+\DeclareRobustCommand{\authorblock}{%
+  \begin{tabular}[t]{@{}c@{}}
+    STEVEN ENAMAKEL\\[2pt]
+    {\normalfont\small\texttt{enamakel@tinyhumans.ai}}
+  \end{tabular}\hspace{3em}%
+  \begin{tabular}[t]{@{}c@{}}
+    CHRISTEL BUCHANAN\\[2pt]
+    {\normalfont\small\texttt{christel@chatandbuild.com}}
+  \end{tabular}}
+\tikzset{box/.style={draw,rounded corners=2pt,align=center,font=\small,inner sep=5pt},
+  arr/.style={-{Stealth[length=5pt]},semithick}}
 
-\title[Seventeen consequences of RH in Lean]{Seventeen consequences of the Riemann hypothesis,\\ formalized in Lean by agents with persistent memory}
-\author[S. Enamakel and C. Buchanan]{%
-Steven Enamakel\\[2pt]
-{\normalfont\small\texttt{\lowercase{enamakel@tinyhumans.ai}}}\\[8pt]
-Christel Buchanan\\[2pt]
-{\normalfont\small\texttt{\lowercase{christel@chatandbuild.com}}}}
+\title[How we attacked conjectures with agents]{How we attacked conjectures with agents:\\ decomposition, self-improving loops and memory}
+\author[S. Enamakel and C. Buchanan]{\authorblock}
 \date{November 2026}
 
 \begin{document}
 \begin{abstract}
-On 20 November 2026 Levent Alp\"oge released a Lean proof of the Riemann hypothesis and of its generalization to Dirichlet $L$-functions. We describe seventeen Lean~4 developments that combine that theorem with classical conditional results. Six prove named conjectures: Erd\H{o}s Problem 985, the Lindel\"of hypothesis, the density hypothesis, Grosswald's conjecture, the completeness of Euler's list of 65 idoneal numbers, and the extended Riemann hypothesis for abelian number fields. Five prove statements known to be equivalent to RH: the inequalities of Robin and Nicolas, Li's positivity, Speiser's theorem on $\zeta'$, and the Mertens bound $M(x)=O(x^{1/2+\eps})$. Six prove further bounds, most with the constants of the original papers, including part (iii) of Erd\H{o}s Problem 770 and Selberg's bounds toward Problem 233. Each development proves the implication from RH or GRH separately from RH itself, and checks the remaining finite ranges with programs whose soundness is proved. We give the shared analytic formulas, the main step of each proof, and the method: an atlas of 2{,}196 problems, a self-improving loop of agents whose only judge is Lean, and a source-linked memory used to find the targets.
+Between August and November 2026 we built a system of agents for attacking open conjectures. When Levent Alp\"oge released a Lean proof of the Riemann hypothesis on 20 November, we used it to produce seventeen Lean developments of consequences of RH in about three days. This paper is about how the work was organized. We describe how the habits of eleven mathematicians became agent roles, how an atlas of 2{,}196 problems decided where to look, how RSI Ralph lets a team of agents edit its own prompts and tools while a scorer it cannot touch decides what is kept, and how a persistent memory was used to choose targets. We then follow several targets through their decomposition: what was split off, which piece held everything up, and how long each step took according to the commit logs. The mathematics is in the repositories.
 \end{abstract}
 \maketitle
 
 \section{Introduction}
 
-Number theory has many theorems of the form ``if the Riemann hypothesis holds, then $X$''. They were proved over the last century by Littlewood, Cram\'er, Selberg, Schoenfeld, Weinberger and others, and each was waiting for its hypothesis. Alp\"oge's proof \cite{alpoge} supplied it. The Lean FRO and the Mathlib Initiative certified the formal proof the next day \cite{leanfro}, and independent kernels accept its export \cite{sutherland}. The statements we use from it are
-\begin{align}
-\text{(RH)}\quad &\zeta(s)=0,\ s\notin\{-2,-4,\dots\}\ \Longrightarrow\ \Re s=\tfrac12, \label{eq:rh}\\
-\text{(GRH)}\quad &\Re s>\tfrac12,\ (\chi\ne\chi_0\text{ or }s\ne1)\ \Longrightarrow\ L(s,\chi)\ne0, \label{eq:grh}
-\end{align}
-the second for every modulus $N\ge1$ and every Dirichlet character $\chi$ modulo $N$.
+We started trying to break conjectures with agents in August 2026. By 25 November we had machine-checked Lean~4 developments of seventeen consequences of the Riemann hypothesis (RH), or of its generalization to Dirichlet $L$-functions (GRH). All are in \url{https://github.com/ChatAndBuild/conjectures}.
 
-A proof of RH does not by itself produce a formal proof of its consequences. Someone has to find which conjectures depend on exactly \eqref{eq:rh} or \eqref{eq:grh}, formalize the conditional argument with explicit constants, and check the finite range that the analysis leaves over. Between 22 and 25 November 2026 we did this for seventeen targets, with agents run by OpenHuman \cite{openhuman} inside a loop called RSI Ralph \cite{rsiralph}, and with Living Brain \cite{livingbrain} as memory. The preparation began in August.
-
-\subsection*{What is proved} Table~\ref{tab:main} lists the targets. All of them live in \url{https://github.com/ChatAndBuild/conjectures}, one repository per target. Rows 1 to 6 are named conjectures that were open before the proof of RH. Rows 7 to 11 are equivalent to RH, so proving them restates RH in another form; we formalize the direction from RH. Rows 12 to 17 are theorems that the literature proves under RH or GRH.
-
-\subsection*{Credit} The proof of RH and GRH is Alp\"oge's. The conditional theorems belong to the authors cited in each section. Our contribution is the formal proof of each implication, the explicit constants and lemmas that the papers leave to the reader, the verified computations, and the resulting theorems without hypotheses. One statement, the bound in Theorem~\ref{thm:770} valid for every $n\ge2$, we did not find in the literature in that explicit form. Problems 770 (parts (i) and (ii)) and 233 remain open.
+The result depended on four things. We studied how strong mathematicians solve problems and turned that into agents. We mapped which open problems were worth attacking. We built a loop in which agents improve both the work and the team doing it. Then we got lucky: Alp\"oge's proof of RH \cite{alpoge} came out, and we had the material at hand to see what it unlocked. Groundwork took three months and the seventeen developments took three days, so most of this paper concerns the groundwork and the way it was used.
 
 \begin{table}[ht]
 \small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}rllll@{}}
+\begin{tabular}{@{}lll@{}}
 \toprule
- & Repository & Result & Input & Conditional theorem\\
+When (2026) & What happened & Repository\\
 \midrule
-1 & \repo{erdos-985} & prime primitive root $q<p$ & GRH & McGown et al.\ \cite{mtt}\\
-2 & \repo{lindelof-rh} & Lindel\"of hypothesis & RH, GRH & Littlewood \cite{littlewood}\\
-3 & \repo{density-rh} & density hypothesis & RH & classical\\
-4 & \repo{grosswald-grh} & Grosswald's conjecture & GRH & McGown et al.\ \cite{mtt}\\
-5 & \repo{weinberger-grh} & 65 idoneal numbers & GRH & Weinberger \cite{weinberger}\\
-6 & \repo{abelian-erh} & ERH, abelian fields & GRH & see \cite{washington}\\
-\midrule
-7 & \repo{robin-rh} & Robin's inequality & RH & Robin \cite{robin}\\
-8 & \repo{nicolas-rh} & Nicolas' inequality & RH & Nicolas \cite{nicolas}\\
-9 & \repo{li-criterion-rh} & Li's positivity & RH & Li \cite{li}\\
-10 & \repo{speiser-rh} & Speiser's theorem & RH & Speiser \cite{speiser}\\
-11 & \repo{mertens-rh} & Mertens bound & RH & Littlewood \cite{littlewood}\\
-\midrule
-12 & \repo{lls-grh} & least non-residues, $L(1,\chi)$ & GRH & Lamzouri et al.\ \cite{lls}\\
-13 & \repo{bach-sorenson-grh} & least prime $\equiv a\ (q)$ & GRH & Bach, Sorenson \cite{bachsorenson}\\
-14 & \repo{schoenfeld-rh} & $\psi$, $\theta$, $\pi$ with $1/8\pi$ & RH & Schoenfeld \cite{schoenfeld}\\
-15 & \repo{cramer-rh} & prime gaps, constant $\frac{22}{25}$ & RH & Carneiro et al.\ \cite{cms}\\
-16 & \repo{erdos-770} & Erd\H{o}s 770(iii) & GRH & see \S\ref{sec:further}\\
-17 & \repo{erdos-233} & bounds toward Erd\H{o}s 233 & RH & Selberg \cite{selberg}\\
+11 Aug to 1 Sep & studied eleven mathematicians; first team of agents & \repo{math-superagent}\\
+30 to 31 Aug & rebuilt the agent so that Lean alone judges proofs & math-agent\\
+Sep to Nov & built the atlas of 2{,}196 problems & \\
+from 10 Oct & built RSI Ralph, a self-improving loop written in JSON & \trepo{rsi-ralph}\\
+21 to 27 Oct & first loops on open Erd\H{o}s problems & \trepo{supermath}\\
+20 Nov & Lean proof of RH released & \cite{rhrepo}\\
+22 to 25 Nov & targets chosen, split and proved & \href{https://github.com/ChatAndBuild/conjectures}{\texttt{conjectures}}\\
 \bottomrule
 \end{tabular}
 \medskip
-\caption{The seventeen developments.}\label{tab:main}
+\caption{Timeline.}\label{tab:time}
 \end{table}
 
-\section{The formal setup}\label{sec:setup}
+\subsection*{What came out} Table~\ref{tab:results} lists the developments. Six are named conjectures that were open before the proof of RH. Five are statements equivalent to RH, for which we formalize the direction from RH. Six are further theorems known under RH or GRH; these include part (iii) of Erd\H{o}s Problem 770 and bounds toward Problem 233, both of which stay open as posed. The proof of RH is Alp\"oge's, certified by the Lean FRO and the Mathlib Initiative \cite{leanfro} and by independent kernels \cite{sutherland}. The theorems of the form ``RH implies $X$'' belong to the authors cited in each repository. What we add is the Lean proof of each implication, the verified computations, and the resulting theorems without a hypothesis.
 
-Every development has two layers. The main library depends on Mathlib and on the other repositories here, never on the proof of RH. Its headline theorem takes RH or GRH as an explicit hypothesis. A short file in a directory \lean{Unconditional/} then imports \lean{riemann-hypothesis} \cite{rhrepo} and supplies that hypothesis. For Erd\H{o}s 985 the whole file is
+\begin{table}[ht]
+\small
+\begin{tabular}{@{}p{0.2\textwidth}p{0.72\textwidth}@{}}
+\toprule
+Named conjectures & \repo{erdos-985}, \repo{lindelof-rh}, \repo{density-rh}, \repo{grosswald-grh}, \repo{weinberger-grh} (Euler's idoneal numbers), \repo{abelian-erh} (extended RH, abelian fields)\\
+\addlinespace
+Equivalent to RH & \repo{robin-rh}, \repo{nicolas-rh}, \repo{li-criterion-rh}, \repo{speiser-rh}, \repo{mertens-rh}\\
+\addlinespace
+Further theorems & \repo{lls-grh} (least non-residues, $L(1,\chi)$), \repo{bach-sorenson-grh} (primes in progressions), \repo{schoenfeld-rh} (explicit $\psi,\theta,\pi$), \repo{cramer-rh} (prime gaps), \repo{erdos-770}, \repo{erdos-233}\\
+\bottomrule
+\end{tabular}
+\medskip
+\caption{The seventeen developments, one repository each.}\label{tab:results}
+\end{table}
+
+\section{Learning from mathematicians}\label{sec:math}
+
+Before building an agent we asked how the best problem solvers work. We read what eleven mathematicians said about their own method, with sources, and took apart a few results by each. Every finding had to end in a move: when to use it, what to do, and how to check that it worked. Table~\ref{tab:moves} gives the short version. For Ramanujan and Perelman, who left almost no record of how they worked, we used their results and did not make up a process.
+
+\begin{table}[ht]
+\small
+\begin{tabular}{@{}lp{0.74\textwidth}@{}}
+\toprule
+Tao & list the difficulties, switch off all but one, solve that, add the others back; try to prove and disprove at the same time\\
+Grothendieck & build a more general setting in which the theorem becomes obvious\\
+Erd\H{o}s & pose problems in large numbers; a good catalogue is a result\\
+Gowers & treat problem solving as an explicit algorithm\\
+Wiles & stay with one problem; the idea you dropped may be the fix\\
+Thurston & understanding a proof matters as much as checking it\\
+Zeilberger & prefer certificates a computer can check, and say what certainty costs\\
+Ramanujan & guess from experiments and prove later; repair a wrong guess\\
+Scholze & look for the setting where the problem is easy and still handles every case\\
+Arnold & treat mathematics as an experimental science\\
+Perelman & finish a stalled programme by finding the missing estimate\\
+\bottomrule
+\end{tabular}
+\medskip
+\caption{What we took from each mathematician.}\label{tab:moves}
+\end{table}
+
+\subsection*{From moves to roles} The moves became agent roles. A reducer works backwards: it asks what would be enough to prove the goal, writes a proof outline with its gaps named, and records each gap as a lemma in a dependency graph. When a lemma fails, everything that depended on it is reopened. Other roles look for counterexamples, try weaker statements, search the literature or run experiments, and one writes Lean.
+
+\subsection*{Where the eleven disagree} The disagreements taught us more than the agreements. Where all eleven agree, the system has a requirement. Where they split, it has a setting that somebody chose, perhaps without noticing. Our first runtime changed course after two unproductive attempts. We had meant that as a budget limit, but it also ruled out Grothendieck's way of working, where the goal does not move for a long time while the theory around it grows. A counter cannot tell that apart from being stuck. We made these settings explicit as \emph{schools} that share a workspace: one attacks the problem where it stands and computes first, one enlarges the setting, and one tries to break the statement before proving it.
+
+\subsection*{The first loop} In \repo{math-superagent} one attempt is followed by several questions asked at once: what did we learn, is there a pattern in the data, is there another angle, is the statement false, what does Lean make of the proposition that the most rests on? The answers are merged and a router decides whether to retry, diversify or stop. One run showed why stopping needs its own machinery. The loop recorded a solution at minute 29, but teams that had no reason to retire kept working, and the run was killed at minute 96, with \$32 of its \$35 spent after the problem was solved. The other lesson from this period was a rule that has not changed since: an agent may decide what to try next, and only Lean decides whether a proof is correct.
+
+\section{An atlas of problems}
+
+A team of agents told to solve an open problem picks the one it has read the most about. That favours famous problems over tractable ones, so we built an atlas before trying to solve anything.
+
+It holds 2{,}196 problems, 1{,}409 of them unsolved, taken from \emph{Erd\H{o}s Problems} \cite{erdosproblems}, Google DeepMind's \emph{formal-conjectures} \cite{formalconj}, Wikipedia and about a hundred entries of our own. They fall into 15 fields; number theory is the largest, with 955. For 808 of the unsolved problems there is a statement in Lean, so an agent can attempt the problem and Lean can check the answer.
+
+Each problem has two scores. One measures how hard it is for mathematicians. The other measures how well it suits an agent: whether candidates can be searched, whether computation helps, and whether a solution would be recognized. Problems are ranked by
+\[
+\text{opportunity}=\text{agent fit}-\text{difficulty}.
+\]
+To test the ranking we scored problems that have since been solved, using what was known before the proof. Everything settled between 2019 and 2024, including Ringel's conjecture and Kaplansky's unit conjecture, came out positive. Fermat's Last Theorem and the Poincar\'e conjecture came out negative.
+
+\section{RSI Ralph: a loop that edits its own team}\label{sec:loop}
+
+\subsection*{From Ralph to RSI Ralph} A Ralph loop gives an agent the same prompt again and again, and only the files it leaves behind carry over. Adding a goal lets the loop stop. In both, the agent is fixed: its prompt, its tools and its teammates do not change. \trepo{rsi-ralph} drops that assumption. It runs in epochs, tests every candidate against the current best, and lets a candidate change the team as well as the work.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[node distance=7mm and 8mm]
+\node[box] (brief) {brief, history,\\ past failures};
+\node[box,right=of brief] (agents) {agents edit\\ a candidate copy};
+\node[box,right=of agents] (score) {scorer runs on\\ candidate and best};
+\node[box,right=of score] (test) {paired test};
+\node[box,below=12mm of agents] (keep) {keep the better copy;\\ stop at goal or budget};
+\node[box,below=12mm of score,dashed] (const) {out of reach:\\ scorer, constitution,\\ frozen statement};
+\draw[arr] (brief)--(agents);
+\draw[arr] (agents)--(score);
+\draw[arr] (score)--(test);
+\draw[arr] (test.south)|-([yshift=-5mm]const.south)-|(keep.south);
+\draw[arr] (keep.west)-|(brief.south);
+\draw[arr,dashed] (const)--(score);
+\end{tikzpicture}
+\caption{One epoch of RSI Ralph.}\label{fig:loop}
+\end{figure}
+
+\subsection*{A loop is a folder} Self-improving loops tend to be slow because changing the agent means changing code. Here the whole environment is text.
+
+\noindent\begin{minipage}{\textwidth}
+\begin{small}\begin{alltt}
+my-loop/
+  rsi.json            what may change, how it is scored, budget, epochs
+  brief.md            the goal, written for the agents
+  hive/
+    hive.json         roles and seats, and the tools each seat may use
+    roles/  seats/    charters and starting prompts
+    context/          what every seat reads
+    constitution.json rules that no edit may break
+    memory.json       what the hive remembers between epochs
+  scorers/            any program that prints METRIC name=value
+  subject/            the thing being improved
+\end{alltt}\end{small}
+\end{minipage}
+
+\noindent The part of \lean{rsi.json} that matters is short. This one is from the starter loop, on graph coloring:
+\begin{small}\begin{alltt}
+"subject": \{ "kind": "dir", "path": "subject", "editable": ["coloring.py"] \},
+"score": \{
+  "scorers": [ \{ "id": "colors", "run": "python3 scorers/colors.py" \} ],
+  "decide": \{ "on": "colors", "test": "seeds", "seeds": [1, 2, 3],
+              "direction": "minimize", "target": 6 \} \},
+"budget": \{ "run_usd": 1 \}, "epochs": 3
+\end{alltt}\end{small}
+Since a team is text with a schema, a change to it is a small diff that can be scored, versioned and rolled back. Each design is named by a hash of its contents, so an identical change is not paid for twice, and baseline scores are cached.
+
+\subsection*{Three depths} What is marked editable decides how deep the improvement goes. With the subject alone, agents fix the work. With the subject and the hive, they also rewrite their prompts, roles and shared context, and the next epoch runs the new team if it won. With the hive as the subject, the editors are the thing being graded. This is the recursive step: each generation of the team edits the next.
+
+\subsection*{What the loop may not do} A loop that can change itself will find ways to pass that are not improvements, so three things are out of its reach. The scorer runs in our code. The constitution lists what no edit may break. Edits outside the editable paths fail the candidate before it is scored. A language model may act as a judge, but only to hold a candidate back; it can never accept one. Every model call goes through a gateway that stops the run at its spending cap.
+
+\subsection*{The mathematical version} \trepo{supermath} turns one conjecture into one loop folder. The statement is frozen, and the seats are a lead, a prover and a refuter. Prover and refuter each work in their own checkout, so the attempt to disprove runs beside the attempt to prove. A candidate's score is a ladder:
+\[
+\text{score}=
+\begin{cases}
+1 & \text{Lean accepts the pinned statement, or its negation, with no debt;}\\
+0.75 & \text{it accepts, but with debt;}\\
+0.2+\dfrac{0.3}{1+g} & \text{the best side elaborates, with } g \text{ gaps left (\lean{sorry});}\\[2mm]
+\dfrac{0.1}{1+e} & \text{it does not elaborate, with } e \text{ errors.}
+\end{cases}
+\]
+The empty template, with one gap on each side, scores $0.35$, so filling a gap moves the score before the problem is settled. The scorer does not trust the candidate's own theorem. It writes a fresh file that states the conjecture at its exact type and asks Lean whether the candidate's proof fits. For larger targets the ladder is a list of intermediate Lean statements, each with a weight.
+
+\section{Choosing targets: the memory}
+
+The proof of RH turned a question about difficulty into a question about dependence. Which problems had been waiting for exactly this? We had stored papers, proof blueprints, harness logs and the atlas in Living Brain \cite{livingbrain}, which compiles captured material into linked, versioned pages that keep their sources. Searching it gave candidates of the form ``RH implies $X$'' that need nothing beyond what the new proof covers.
+
+Knowing what to leave out mattered as much. Artin's primitive root conjecture needs the hypothesis for fields that the proof does not reach. Binary Goldbach and the twin prime conjecture are not known to follow from RH. We recorded why each of these failed so that a later session would not rediscover it. The proof's own library was a second source: at 17 million lines it contains machinery that other targets need, such as the Kronecker-Weber theorem, and finding the right theorem in it was often harder than using it.
+
+Recall proposes, and a separate scoping pass checks. For several targets an agent first read the primary sources and the two Lean libraries and wrote a report. The report for \repo{abelian-erh} corrected five points in the brief it was given. One planned step, a functional equation, was unnecessary, because the library already had a stronger statement. Two pieces listed as work were already in Mathlib. The same report found that the memory held the brief but no earlier attempts on that target. The memory helped us choose where to dig; the sources told us what was there.
+
+\section{How a target is broken down}\label{sec:break}
+
+Every target went through the same steps.
+\begin{enumerate}
+\item \emph{Freeze the statement.} It goes into its own file and is not edited again. If \emph{formal-conjectures} has it, we copy it word for word. The easiest way to finish a hard proof is to weaken what it claims, and with a frozen file that shows up in a diff.
+\item \emph{Make RH an argument.} The main library proves $\mathrm{RH}\Rightarrow X$ and never imports the proof of RH. A last file plugs it in, usually in one line:
 \begin{small}\begin{alltt}
 theorem erdos_985 : Erdos985.Erdos985Statement :=
   Erdos985.erdos_985_of_GRH LFunction_ne_zero_of_half_lt_re
 \end{alltt}\end{small}
-The hypotheses are copied word for word from that repository, and both sides use Lean v4.36.0 and the same Mathlib revision, so the two definitions are the same term. If the main library says $\mathrm{RH}\Rightarrow X$, that implication stands whatever happens to the second layer.
+\item \emph{Write the blueprint.} Every step becomes a Lean statement before anyone proves it, with a table of what Mathlib has, what the RH library has and what is missing.
+\item \emph{Split by interface.} Steps that depend only on each other's statements go to different agents on different branches.
+\item \emph{Split by range.} Large values are handled by analysis and small ones by computation. The work is in making the ranges meet.
+\item \emph{Rebuild before accepting.} A lead session rebuilds each branch, reads the axiom report itself, and merges.
+\end{enumerate}
 
-Target statements sit in a file that is fixed before the proof starts. Where Google DeepMind's \emph{formal-conjectures} \cite{formalconj} has the statement, we copy it; otherwise we transcribe it from the paper. Fixing the statement matters because the easiest way to finish a hard proof is to weaken what it claims.
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[node distance=9mm and 7mm]
+\node[box] (s) {frozen statement $X$};
+\node[box,below=of s] (b) {blueprint: lemmas as Lean statements};
+\node[box,below left=10mm and -4mm of b] (l) {large range\\ (analysis, RH assumed)};
+\node[box,below right=10mm and -4mm of b] (c) {small range\\ (checker, proved sound)};
+\node[box,below=26mm of b] (m) {$\mathrm{RH}\Rightarrow X$};
+\node[box,right=14mm of m] (r) {proof of RH};
+\node[box,below=of m] (u) {$X$};
+\draw[arr] (s)--(b);\draw[arr] (b)--(l);\draw[arr] (b)--(c);
+\draw[arr] (l)--(m);\draw[arr] (c)--(m);\draw[arr] (m)--(u);\draw[arr] (r)|-(u);
+\end{tikzpicture}
+\caption{The shape of a target.}\label{fig:shape}
+\end{figure}
 
-\subsection*{Finite ranges} An explicit proof usually works only above a threshold. Below it we run a checker, written in Lean, with a Lean proof that acceptance implies the theorem on that range. Large runs are evaluated by \lean{native\_decide}, which trusts the Lean compiler for the evaluation and records one axiom per call. Table~\ref{tab:compute} gives the counts; everything else depends only on Lean's axioms \lean{propext}, \lean{Classical.choice} and \lean{Quot.sound}. No development contains a \lean{sorry}.
+\subsection*{The rule about rebuilding} An agent's report was never accepted as evidence. On 22 November a stale checkout printed a hidden gap under a theorem believed to be finished, and the rule dates from then. Lean's \lean{\#print axioms} lists everything a theorem rests on, so ``done'' has a mechanical meaning: the project builds, and the list contains only Lean's three standard axioms and one entry per evaluated finite computation.
+
+\subsection*{Two kinds of agent work} Agents wrote the checkers for the finite ranges and estimated their cost, but did not launch the large runs. An early attempt to run several at once overloaded the build machine, so the big computations went last, one at a time. Each checker comes with a Lean proof that if it accepts then the theorem holds on that range. The run itself then trusts the Lean compiler, which the axiom list records.
+
+\section{Case studies}\label{sec:cases}
+
+Times below are read from the commit logs and given in UTC. They measure elapsed time between commits, so they include waiting and exclude thinking that left no commit.
+
+\subsection*{Erd\H{o}s 985: one problem first} The loop learned the job on this target, which asks for a prime primitive root below every odd prime. The first commit, on 22 November at 16:34, reduced everything to two named gaps, both explicit estimates from the literature. The blueprint listed eight prerequisites (P1 to P8) for closing them and marked which were in Mathlib. It then compared two routes. One needed a general theorem that Mathlib lacks but kept the published constants. The other avoided that theorem and gave worse constants. A small table settled the choice by pricing each constant in computation:
+\begin{center}
+\small
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Constant in the estimate & 0.73 & 1 & 2 & 5 & 10\\
+Primes to check, up to & $4.3\cdot10^7$ & $4.1\cdot10^8$ & $8.8\cdot10^9$ & $2.9\cdot10^{11}$ & $1.3\cdot10^{12}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+An audit of the RH library put its constants for the second route between $10^4$ and $10^6$, which would have pushed the computation past $10^{20}$. The harder route was the cheap one. Three pieces (the missing theorem, the growth bounds and the numerical constants) were then committed within the same minute, at 16:48. The first gap closed at 17:17 and the second at 17:28, and the theorem had no gaps at 17:35, an hour after the first commit. What made this useful was the byproduct: its analytic toolkit is a dependency of every other development.
+
+\subsection*{Grosswald: the quick part and the slow part} Here the split was by range. The argument above $2.5\cdot10^{15}$, modelled on a published proof, was assembled 42 minutes after the repository was created. The range below it was stated openly as a hypothesis, since the literature covers it by a large computation. Removing that hypothesis took until 25 November. The threshold was brought down to $10^{13}$ by a tree search over prime factors, the rest was cut into 2{,}502 independent chunks, and the whole evaluation cost about $3.5$ million CPU seconds. Progress on a target like this is easy to overstate: it can look finished after its first hour.
+
+\subsection*{Speiser: when the ranges do not meet} This target asks that a function have no zero in a strip. The first proof, an hour after the start, covered heights above $8$. A second pass sharpened the estimate to $7$, and the method was found to stop near $6.5$. A separate argument handled heights below $2.5$. The band between resisted both. A design note compared three ways to close it, and rejected two because each needed more new Lean than the third. The band was covered by 71{,}223 small cells per half, checked in three minutes, and the theorem was complete three and a half hours after the start. The pieces arrived as separate pull requests.
+
+\subsection*{Schoenfeld: ship a weak version, then name the inputs} The first version, 54 minutes in, had the right statement with constants several times larger than the published ones. Two sharpening steps followed. Then the published constant was reduced to five named inputs, each a separate statement: one about zeros and four finite computations. With the theorem already proved from its inputs, they were discharged one at a time through the evening. The last came from a public Lean proof, which we imported with its 216 files. Naming the inputs first meant that each could be worked on without the others.
+
+\subsection*{Lamzouri, Li and Soundararajan: a paper as a ladder} This target was a whole paper. Its theorems were transcribed at the start and proved from the easiest to the hardest over 17 hours, each rung merged on its own. Several rungs were first proved with a weaker constant and replaced later by the paper's, so there was always a finished theorem to fall back on.
 
 \begin{table}[ht]
 \small
-\begin{tabular}{@{}llr@{}}
+\begin{tabular}{@{}llll@{}}
 \toprule
-Repository & Range checked by computation & \lean{native\_decide}\\
+Target & First version & Full version & What took the time\\
 \midrule
-\repo{erdos-985} & odd primes $p<10^8$ & 20\\
-\repo{grosswald-grh} & all $409<p<10^{13}$; sieve tree above & 2950\\
-\repo{weinberger-grh} & $n<10^8$; the 65 numbers & 11\\
-\repo{robin-rh} & $\log n\le e^{30}$, by sieving to about $1.07\cdot10^{13}$ & 624\\
-\repo{nicolas-rh} & primes $p_k\le10^5$ & 1\\
-\repo{speiser-rh} & $\frac52\le|\Im s|<7$ & 2\\
-\repo{lls-grh}, \repo{erdos-770} & moduli for Bach's constant $2$ & 15\\
-\repo{bach-sorenson-grh} & $q<2^{15}$ & 16\\
-\repo{schoenfeld-rh} & $\psi$ on $[1500,10^{10}]$; three small ranges & 24\\
+\repo{erdos-985} & 2 gaps named at start & 1 h & one missing general theorem\\
+\repo{grosswald-grh} & 42 min, range assumed & 25 Nov & $3.5\cdot10^6$ CPU seconds\\
+\repo{robin-rh} & 1 h 8 min, range assumed & 24 Nov & sieving to about $10^{13}$\\
+\repo{abelian-erh} & & 58 min & none; scoping had found the parts\\
+\repo{schoenfeld-rh} & 54 min, weaker constants & 14 h 22 min & five named inputs\\
+\repo{speiser-rh} & 1 h 9 min, upper range & 3 h 30 min & the middle band\\
+\repo{lls-grh} & 2 h 55 min, first rungs & 17 h 13 min & ladder of theorems\\
 \bottomrule
 \end{tabular}
 \medskip
-\caption{Verified computations behind the headline theorems. The other seven use no \lean{native\_decide}; some of them run smaller checks in the kernel. In \lean{lls-grh} only the theorems with Bach's constant use it; in \lean{erdos-770} the fifteen are inherited from \lean{lls-grh}.}\label{tab:compute}
+\caption{Elapsed time from the first commit of each repository.}\label{tab:cases}
 \end{table}
 
-\section{Shared analytic formulas}\label{sec:toolkit}
+\section{What we learned}
 
-Most of the analysis rests on a small toolkit, built first for Erd\H{o}s 985 \cite{erdos985}. Put $\xi(s)=s(s-1)\pi^{-s/2}\Gamma(s/2)\zeta(s)$, and let $\rho$ run over its zeros with multiplicity $m_\rho$. For a primitive non-principal character $\chi$ modulo $N$, with parity $a\in\{0,1\}$, put $\Lam(s,\chi)=\pi^{-(s+a)/2}\Gamma(\frac{s+a}2)L(s,\chi)$.
+\subsection*{Decomposition is the bottleneck} Once a step had a precise Lean statement and no hidden dependence on its neighbours, proving it was usually the fast part. The slow parts were finding the split, making two ranges meet, and the large computations.
 
-\subsection*{Hadamard's product} Both functions are entire of order one, so for suitable $b$
-\begin{equation}\label{eq:hadamard}
-\frac{f'}{f}(z)=b+\sum_\rho m_\rho\Bigl(\frac1{z-\rho}+\frac1\rho\Bigr).
-\end{equation}
-Under RH, combining \eqref{eq:hadamard} at $s$ and at $1-\bar s$ gives an identity that we use repeatedly:
-\begin{equation}\label{eq:poisson}
-\Re\frac{\xi'}{\xi}(s)=\sum_\rho m_\rho\,\frac{\Re s-\frac12}{|s-\rho|^2}.
-\end{equation}
-Its right side has a sign on each side of the critical line. At $s=1$ it also yields
-\begin{equation}\label{eq:zerosum}
-\sum_\rho\frac{m_\rho}{|\rho|^2}=2+\gamma-\log4\pi<\frac1{20}.
-\end{equation}
-The analogue for $\chi$ is $\sum_\rho m_\rho/|\rho(\rho+1)|\le\frac23(\log N+\frac53)$.
+\subsection*{First estimates of cost were too high} A first proof often landed above the published constant, and the estimated cost of closing the gap looked prohibitive. Each time the obstacle was one lossy step, and keeping that step exact removed it.
 
-\subsection*{Weighted explicit formulas} Smooth weights make the sums over zeros converge absolutely, so no truncated Perron formula is needed. For primitive $\chi\ne\chi_0$, with the Ces\`aro weight and the kernel $x^s/(s(s+1))$,
-\begin{equation}\label{eq:cesaro}
-\sum_{n<x}\Lam(n)\chi(n)\Bigl(1-\frac nx\Bigr)=-\sum_\rho m_\rho\frac{x^\rho}{\rho(\rho+1)}+O_\chi(1+\log x).
-\end{equation}
-With the weight $\log(x/n)$ and the kernel $x^s/s^2$,
-\begin{equation}\label{eq:logweight}
-\sum_{n\le x}\Lam(n)\chi(n)\log\frac xn=-\sum_\rho m_\rho\frac{x^\rho-1}{\rho^2}-\frac{\Lam'}{\Lam}(0,\chi)\log x+\widetilde\Gamma_\chi(x).
-\end{equation}
-Under GRH, \eqref{eq:cesaro} gives the estimates of Bach type that McGown, Trevi\~no and Trudgian state as their Lemma~1 without proof. For an integer $x\ge1$, a prime $p$ and $\chi\ne\chi_0$ modulo $p$,
-\begin{equation}\label{eq:bach}
-\Bigl|\sum_{n<x}\Lam(n)\Bigl(1-\frac nx\Bigr)-\frac x2\Bigr|\le\frac{\sqrt x}{20}+3,\qquad
-\Bigl|\sum_{n<x}\Lam(n)\chi(n)\Bigl(1-\frac nx\Bigr)\Bigr|\le c(p,x)\sqrt x\log p,
-\end{equation}
-where
-\[
-c(p,x)=\frac23\Bigl(1+\frac2{\sqrt x}+\frac3{x^{3/2}}\Bigr)\Bigl(1+\frac5{3\log p}\Bigr)+\frac{\log x+2}{\sqrt x\log p}.
-\]
-The first bound in integrated form is $|\Psi_1(t)-t^2/2|\le t^{3/2}/20+4t$, with $\Psi_1(t)=\int_0^t\psi$. Full proofs of \eqref{eq:cesaro} and \eqref{eq:bach} are in \cite{erdos985}.
+\subsection*{Missing theory should be visible} When Mathlib lacked a classical theorem, it entered as a named hypothesis and never as a gap. The theorem could then be finished and the hypothesis discharged separately, often from the RH library.
 
-\section{Named conjectures}\label{sec:named}
+\subsection*{A judge that cannot be argued with} Changes to the team are safe to automate because the scorer does not read explanations. This worked for mathematics because the score is a proof check. It would be harder to carry over to work where the score is a model's opinion.
 
-\begin{theorem}[Erd\H{o}s 985, \repo{erdos-985}]\label{thm:985}
-Every odd prime $p$ has a prime primitive root $q<p$.
-\end{theorem}
-Let $\omega=\omega(p-1)$. If no prime $q<p$ is a primitive root, expanding the product
-\[
-\prod_{\ell\mid p-1}\Bigl(\bigl(1-\tfrac1\ell\bigr)-\tfrac1\ell\sum_{0<i<\ell}\eta(n)^{i(p-1)/\ell}\Bigr),\qquad \ord\eta=p-1,
-\]
-which vanishes at every $n$ that is not a primitive root, gives
-\begin{equation}\label{eq:indicator}
-S_0\le(2^{\omega}-1)\max_{\chi\ne\chi_0}|S_\chi|,
-\end{equation}
-where $S_\chi$ is the sum in \eqref{eq:bach} at $x=p$. By \eqref{eq:bach} this fails for $p\ge10^8$. The smaller primes are checked.
+\subsection*{What did not work} Our sweep of the open Erd\H{o}s problems for new consequences of RH found nothing we kept. Most of what looked attackable was solved, already claimed or out of reach. One candidate, part of Problem 404, had good numerical support and was dropped when no proof plan survived. Several first guesses about who had proved what were wrong, and were corrected against the papers.
 
-\begin{theorem}[Lindel\"of, \repo{lindelof-rh}]
-For every $\eps>0$, $\zeta(\frac12+it)=O(t^\eps)$, and $L(\frac12+it,\chi)=O_{\chi,\eps}(t^\eps)$ for every Dirichlet character $\chi$.
-\end{theorem}
-By \eqref{eq:poisson}, $|\xi(\sigma+it)|$ increases in $\sigma\ge\frac12$, so for $\delta>0$
-\[
-|\zeta(\tfrac12+it)|\ll t^{\delta/2}\,|\zeta(\tfrac12+\delta+it)|.
-\]
-Borel and Carath\'eodory's inequality followed by Hadamard's three lines theorem bounds $\log|\zeta(\frac12+\delta+it)|$ by $C(\log t)^{\alpha}$ with $\alpha<1$. This monotonicity replaces the convexity principle and Stirling's formula in Littlewood's proof.
+\subsection*{Limits of the evidence} We ran no controlled comparison. The proofs show that the statements hold; they do not show how much the memory, the roles or the self-editing contributed, and the arrival of a proof of RH did most of the work. A fair test would run the same targets with the same model and budget, with and without each component, and measure how well each ranks an expert list of targets, the time to a first accepted proof, repeated dead ends, and cost. Our checks link against the community build of \cite{rhrepo} and do not repeat the kernel checks of \cite{sutherland}.
 
-\begin{theorem}[Density hypothesis, \repo{density-rh}]
-For every $\eps>0$ there is $C$ such that, for $\frac12\le\sigma\le1$ and $T\ge2$, the number $N(\sigma,T)$ of zeros with $\Re\rho\ge\sigma$ and $0<\Im\rho\le T$ satisfies $N(\sigma,T)\le C\,T^{2(1-\sigma)+\eps}$.
-\end{theorem}
-Under RH the count is zero for $\sigma>\frac12$, so only $N(\frac12,T)\ll T\log T$ is needed. The repository proves that bound with no hypothesis, from Jensen's inequality.
+\section*{Acknowledgments and disclosure}
 
-\begin{theorem}[Grosswald, \repo{grosswald-grh}]
-For every prime $p>409$ the least primitive root satisfies $g(p)<\sqrt p-2$.
-\end{theorem}
-The argument of Theorem~\ref{thm:985} is run at $x=\lfloor\sqrt p\rfloor-2$, with a sieve. If $S$ is a set of primes dividing $p-1$ and $\delta=1-\sum_{\ell\in S}1/\ell>0$, a counterexample satisfies
-\[
-S_0\le\Bigl(2^{\omega-|S|}\Bigl(2+\frac{|S|-1}{\delta}\Bigr)-1\Bigr)c(p,x)\sqrt x\log p .
-\]
-This settles $p\ge10^{47}$ with $S=\emptyset$ (where the factor is $2^\omega-1$). A tree search over the prime factors of $p-1$ brings the threshold down to $10^{13}$, and every prime from $409$ to there is checked directly.
-
-\begin{theorem}[Idoneal numbers, \repo{weinberger-grh}]
-A positive integer is not of the form $ab+bc+ca$ with $0<a<b<c$ if and only if it is one of Euler's 65 numbers, the largest being $1848$.
-\end{theorem}
-Since $n=ab+bc+ca$ exactly when $n+a^2=(a+b)(a+c)$, an idoneal $n$ forces $-n$ to be a non-residue modulo every odd prime $p\nmid n$ with $p^2<n$. Let $\psi$ be the primitive character attached to $(-4n/\cdot)$ and $x=\lfloor\sqrt n\rfloor$. Then
-\[
-\sum_{m<x}\Lam(m)\Bigl(1-\frac mx\Bigr)\bigl(1+\Re\psi(m)\bigr)\le2\,\#P\,\log x,
-\]
-where $P$ is the set of primes $p<x$ with $p^2<x$ or $p\mid2n$. GRH makes the left side close to $x/2$, a contradiction for $n\ge10^8$. The route avoids genus theory and the class number formula.
-
-\begin{theorem}[ERH for abelian fields, \repo{abelian-erh}]
-If $K/\Q$ is a finite abelian extension, every zero of $\zeta_K$ with $0<\Re s<1$ has $\Re s=\frac12$.
-\end{theorem}
-By the Kronecker-Weber theorem, $K\subseteq\Q(\zeta_N)$ for some $N$. Let $X(K)$ be the characters modulo $N$ trivial on the subgroup fixing $K$. Comparing logarithms gives
-\begin{equation}\label{eq:dedekind}
-\zeta_K(s)=E(s)\prod_{\chi\in X(K)}L(s,\chi),
-\end{equation}
-with $E$ holomorphic and zero-free on $\Re s>0$; ramified primes go into $E$ and need no separate treatment. Kronecker-Weber and the continuation of $\zeta_K$ come from \cite{rhrepo}.
-
-\section{Statements equivalent to RH}\label{sec:equiv}
-
-\begin{theorem}[Robin, \repo{robin-rh}]
-$\sigma(n)<e^\gamma n\log\log n$ for every $n>5040$, and $\sigma(n)\le H_n+e^{H_n}\log H_n$ for every $n\ge1$.
-\end{theorem}
-Both ranges start from the envelope that defines colossally abundant numbers: for every $\eps>0$,
-\begin{equation}\label{eq:robin}
-\log\frac{\sigma(n)}n\le\eps\log n+\sum_p\max_{k\ge0}\Bigl(\log\frac{\sigma(p^k)}{p^k}-k\eps\log p\Bigr).
-\end{equation}
-For $\log n\ge e^{30}$ one takes $\eps=\log(1+1/x)/\log x$ with $x=\log n$ and uses $\Psi_1$. Below that the right side of \eqref{eq:robin} is a line in $x$ and $\gamma+\log\log x$ is concave, so checking the two ends of an interval settles every $n$ in between.
-
-\begin{theorem}[Nicolas, \repo{nicolas-rh}]
-With $N_k=p_1\cdots p_k$, $N_k/\varphi(N_k)>e^\gamma\log\log N_k$ for every $k\ge1$.
-\end{theorem}
-Let $S(x)=-\sum_{p\le x}\log(1-1/p)$, $w(t)=(1+\log t)/(t^2\log^2t)$ and $T(x)=\sum_{p>x}(-\log(1-1/p)-1/p)$. Then
-\[
-S(x)-\gamma-\log\log\theta(x)\ \ge\ \int_x^\infty(t-\theta(t))\,w(t)\,dt-T(x).
-\]
-The gain is $\psi-\theta\ge\psi(\sqrt t)$, which outweighs the zero sum for $x\ge10^5$.
-
-\begin{theorem}[Li, \repo{li-criterion-rh}]
-$\lambda_n=\sum_\rho\bigl(1-(1-1/\rho)^n\bigr)>0$ for every $n\ge1$.
-\end{theorem}
-Here zeros are paired by conjugation and, as in the \emph{formal-conjectures} statement, counted once each. On the critical line $w=1-1/\rho$ has $|w|=1$, so
-\begin{equation}\label{eq:li}
-2\Re(1-w^n)=|1-w^n|^2\ge0,\qquad |1-w^n|\le\frac n{|\rho|}.
-\end{equation}
-The sum converges by \eqref{eq:zerosum}. It is positive because $\zeta$ has infinitely many zeros, which the repository proves without Stirling's formula.
-
-\begin{theorem}[Speiser, \repo{speiser-rh}]
-$\zeta'(s)\ne0$ for $0<\Re s<\frac12$.
-\end{theorem}
-If $\zeta'(s)=0$ in the strip, then
-\begin{equation}\label{eq:speiser}
-\frac{\xi'}\xi(s)=\frac1s+\frac1{s-1}-\frac12\log\pi+\frac12\,\frac{\Gamma'}\Gamma\Bigl(\frac s2\Bigr).
-\end{equation}
-For $|\Im s|\ge7$ the right side has positive real part while the left is at most $0$ by \eqref{eq:poisson}. For $|\Im s|<\frac52$ the two sides have incompatible sizes. The band between is covered by discs on which an Euler-Maclaurin expansion keeps $\zeta'$ away from zero.
-
-\begin{theorem}[Mertens bound, \repo{mertens-rh}]
-For every $\eps>0$, $M(x)=\sum_{n\le x}\mu(n)=O(x^{1/2+\eps})$. More precisely, for all large $x$,
-\[
-|M(x)|\le\sqrt x\,\exp\Bigl(\frac{25\log x}{\log\log x}\Bigr).
-\]
-\end{theorem}
-The second bound is Titchmarsh's \cite{titchmarsh27} with an explicit constant. With $A(N)=\sum_{n<N}\mu(n)(N-n)$ one has $M(N)=A(N+1)-A(N)$ and
-\[
-A(N)=\frac1{2\pi i}\int_{(\sigma_0)}\frac{N^{s+1}}{s(s+1)\,\zeta(s)}\,ds,\qquad\sigma_0>\tfrac12,
-\]
-so a bound for $1/\zeta$ to the right of the critical line is enough. The repository also derives the bounds of Riesz, Hardy and Littlewood, Franel and Landau, the Liouville function, and $\det R_n=M(n)$ for Redheffer's matrix.
-
-\section{Further consequences}\label{sec:further}
-
-\begin{theorem}[Lamzouri, Li and Soundararajan, \repo{lls-grh}]
-\begin{enumerate}
-\item For every prime $q\ge5$ there is a quadratic non-residue $n\le(\log q)^2$.
-\item For primitive $\chi$ modulo $q\ge10^{10}$,
-\[
-|L(1,\chi)|\le2e^\gamma\Bigl(\log\log q-\log2+\frac12+\frac1{\log\log q}\Bigr).
-\]
-\item Every proper subgroup of $(\Z/q\Z)^\times$, $q\ge3$, omits a unit $n\le2(\log q)^2$.
-\end{enumerate}
-\end{theorem}
-Parts (1) and (2) are from \cite{lls}; part (3) is Bach's theorem \cite{bach90} with his constant. The repository covers every theorem of \cite{lls}, including least primes in cosets and class number bounds. The main tool is \eqref{eq:logweight}, with the zero sum evaluated through
-\begin{equation}\label{eq:z2}
-\sum_\rho\frac{m_\rho}{|\rho|^2}=\log N+\Re\frac{\Lam'}\Lam(1,\chi)+\Re\frac{\Lam'}\Lam(1,\bar\chi).
-\end{equation}
-
-\begin{theorem}[Bach and Sorenson, \repo{bach-sorenson-grh}]
-If $q\ge2$ and $(a,q)=1$, some prime $p\equiv a\pmod q$ satisfies $p<2(q\log q)^2$.
-\end{theorem}
-Bounding each character separately stops at the constant $\frac72$. Summing over all characters first, with
-\[
-\sum_{\chi\bmod q}\Re\frac{L'}L(\sigma,\chi)\le0\qquad(\sigma>1),
-\]
-gives the constant $2$ for $q\ge2^{15}$.
-
-\begin{theorem}[Schoenfeld, \repo{schoenfeld-rh}]
-\begin{align*}
-|\psi(x)-x|&<\frac{\sqrt x\log^2x}{8\pi}\quad(x\ge73.2),&
-|\theta(x)-x|&<\frac{\sqrt x\log^2x}{8\pi}\quad(x\ge599),\\
-|\pi(x)-\li(x)|&<\frac{\sqrt x\log x}{8\pi}\quad(x\ge2657).
-\end{align*}
-\end{theorem}
-Differencing $\Psi_1$ over a step $h\asymp\sqrt x$ gives
-\[
-|\psi(x)-x|\le\frac h2+O(1)+\sqrt{x+h}\;F\Bigl(\frac{2(x+h)}h\Bigr),\qquad F(T)=\sum_\rho m_\rho\min\Bigl(\frac1{|\rho|},\frac T{|\rho|^2}\Bigr).
-\]
-Rosser's explicit zero count then bounds $F(T)$ by $\log^2T/(2\pi)$ up to explicit lower-order terms. The formal proof of Rosser's count is vendored from public Lean projects credited in the repository.
-
-\begin{theorem}[Cram\'er; Carneiro, Milinovich and Soundararajan, \repo{cramer-rh}]
-For $x\ge4$ the interval $[x,\,x+\frac{22}{25}\sqrt x\log x]$ contains a prime. Moreover
-\[
-\int_1^X\Bigl(\frac{\psi(x)-x}x\Bigr)^2dx\sim c_1\log X,\qquad c_1=\sum_{\rho}\frac{m_\rho^2}{|\rho|^2}\quad(\rho\text{ distinct}).
-\]
-\end{theorem}
-The gap bound uses a piecewise linear weight $w(n)=\sum_ja_j\max(n_j-n,0)$, positive on the gap and negative on either side. The explicit formula reads
-\[
-\sum_n\Lam(n)w(n)=\sum_ja_j\Psi_1(n_j),
-\]
-and the primes outside the gap are bounded by the large sieve form of Brun and Titchmarsh's inequality.
-
-\begin{theorem}[Erd\H{o}s 770(iii), \repo{erdos-770}]\label{thm:770}
-Let $h(n)$ be the least $M>2$ such that $2^n-1,\dots,M^n-1$ have greatest common divisor $1$, and let $P(n)$ be the largest prime $p$ with $p-1\mid n$. For every $n\ge2$,
-\[
-P(n)\le h(n)\le\max\bigl(P(n),\lceil200\log^2n\rceil\bigr).
-\]
-In particular, for every $\eps>0$ and all large $n$, $P(n)>n^\eps$ implies $h(n)=P(n)$.
-\end{theorem}
-If a prime $r$ divides $i^n-1$ for all $2\le i\le M$, the kernel of $u\mapsto u^n$ on $(\Z/r\Z)^\times$ contains $1,\dots,M$. When $r\le n^{10}$ and the kernel is proper, part (3) of the theorem above gives $M<2\log^2r\le200\log^2n$. When $r>n^{10}$, products of small primes give more than $n$ elements of a group of order at most $n$. That GRH implies a bound of this shape is remarked without proof in notes of Korsky, which we know through secondary sources.
-
-\begin{theorem}[Selberg, \repo{erdos-233}]
-Let $d_n=p_{n+1}-p_n$. Then $\sum_{n<N}d_n^2=O(N\log^4N)$. If $h(x)/\log^2x\to\infty$, almost all intervals $(x,x+h(x)]$ contain a prime; if also $h$ is increasing and $h(x)=o(x)$, then $\pi(x+h(x))-\pi(x)\sim h(x)/\log x$ for almost all $x$.
-\end{theorem}
-Put $\Delta_\delta(y)=\Psi_1(y(1+2\delta))-2\Psi_1(y(1+\delta))+\Psi_1(y)$. Its mean square satisfies
-\[
-\int_x^{4x}\bigl(\Delta_\delta(y)-\delta^2y^2\bigr)^2\,dy\ll x^4\delta^3\log^2\frac2\delta+x,
-\]
-and a long gap forces $\Delta_\delta(y)$ to be far from $\delta^2y^2$ on a set of comparable length. The conjectured bound $O(N\log^2N)$ of Problem 233 is open even under RH.
-
-\section{Method}\label{sec:method}
-
-\subsection*{Moves taken from mathematicians} We began by reading what eleven mathematicians said about how they work (Tao, Grothendieck, Erd\H{o}s, Gowers, Wiles, Thurston, Zeilberger, Ramanujan, Scholze, Arnold and Perelman). Each account was reduced to moves an agent can carry out: isolate one difficulty at a time, try to prove and to disprove at once, repair a false guess, look for the one missing estimate. Where the record was thin, as for Ramanujan and Perelman, we did not invent a process. The moves became roles. One agent reduces a goal to named lemmas, others search for counterexamples, try weaker statements or read the literature, and one writes Lean. A dependency graph records the open lemmas, and when one fails the results above it are reopened. The first version is \repo{math-superagent}.
-
-\subsection*{An atlas of problems} Agents asked to solve an open problem tend to choose a famous one. We therefore compiled 2{,}196 problems, 1{,}409 of them unsolved, from \emph{Erd\H{o}s Problems} \cite{erdosproblems}, \emph{formal-conjectures}, Wikipedia and about a hundred entries of our own; 808 of the unsolved ones have a Lean statement. Each problem has a difficulty score for mathematicians and a score for how well it suits agents, and problems are ranked by
-\[
-\text{opportunity}=\text{agent fit}-\text{difficulty}.
-\]
-As a retrospective test we scored solved problems on what was known before their proofs. Those settled between 2019 and 2024, such as Ringel's conjecture and Kaplansky's unit conjecture, came out positive; Fermat's Last Theorem and the Poincar\'e conjecture came out negative.
-
-\subsection*{The loop} RSI Ralph repeats a prompt and carries forward only the files an agent leaves. It runs in epochs, tests each proposed change against the current best on the same inputs, and may edit the team's own prompts, roles and tools. The task, the team and the fixed rules are three JSON files, so a change is a small diff that can be scored and rolled back. Agents cannot edit the scorer. For a formal proof the score is a ladder of Lean statements, and a change is kept only if the project builds and \lean{\#print axioms} shows nothing outside the allowed list. A lead session rebuilt each branch itself before merging it. The first runs on Erd\H{o}s problems used \href{https://github.com/tinyhumansai/supermath}{\texttt{supermath}}.
-
-\subsection*{Memory} Papers, proof blueprints, harness logs and the atlas were stored in Living Brain, which compiles captured material into linked, versioned pages that keep their sources. When the proof of RH appeared, the question was which problems had been waiting for exactly \eqref{eq:rh} and \eqref{eq:grh}. Recall over this material surfaced the candidates and recorded why others failed. Artin's primitive root conjecture needs GRH for Kummer fields, which \eqref{eq:grh} does not include; binary Goldbach and the twin prime conjecture are not known to follow from RH.
-
-Living Brain makes four decisions about each item: whether it deserves upkeep, where it belongs, what it should be linked to, and when it should return. The last of these matters most in this work, since a proof is resumed many times. Separate health measures track whether the store is fresh, ready and under strain. They rest on a decay for an event of age $a$ with half-life $h$ and a saturating scale for an aggregate $x$,
-\[
-D(a,h)=2^{-a/h},\qquad S(x,k)=100\bigl(1-e^{-\max(0,x)/k}\bigr).
-\]
-None of these numbers measures whether a proof is correct.
-
-\subsection*{The recipe for a target} Each project followed the same steps.
-\begin{enumerate}
-\item Write the target statement and fix it.
-\item Prove $\mathrm{RH}\Rightarrow X$ or $\mathrm{GRH}\Rightarrow X$, with the hypothesis as an argument, by splitting the proof into lemmas for separate agents.
-\item Sharpen the constants until the threshold is within reach of a computation, then run a checker that has been proved sound.
-\item Supply the hypothesis from \cite{rhrepo}.
-\end{enumerate}
-Erd\H{o}s 985 came first, on 22 November, and its toolkit (Section~\ref{sec:toolkit}) was reused everywhere else. Classical theorems missing from Mathlib, such as Kronecker-Weber and the class number formula, entered as named hypotheses and were discharged from \cite{rhrepo} in the last step.
-
-\section{Remarks}
-
-\subsection*{Constants} A first proof often landed above the published constant. Bach's bound went from $\frac{21}5$ to $\frac{11}4$ to $2$, the bound of Bach and Sorenson from $\frac72$ to $2$, Schoenfeld's from $\frac18$ to $\frac1{8\pi}$, and Cram\'er's gap constant from $2$ to $\frac{22}{25}$. Each time the obstacle was one lossy step, and keeping that step exact removed it.
-
-\subsection*{What did not work} A search of the open Erd\H{o}s problems for further consequences of RH by a new argument found nothing we kept. Problem 233 asks for more than RH is known to give.
-
-\subsection*{Limits of the evidence} The proofs show that the statements hold. They do not show how much the memory contributed. Recall was used to choose targets, but we ran no comparison without it. A fair test would give the same model, roles and budget to runs with and without memory, and compare how well each ranks an expert list of consequences, the time to a first accepted proof, repeated dead ends, and cost. Our own checks link against the community build of \cite{rhrepo} at commit \lean{507a75d91d} and do not repeat the kernel checks of \cite{sutherland}.
-
-\subsection*{Acknowledgments and disclosure} We thank Levent Alp\"oge, the Lean and Mathlib communities, and the authors of the vendored Lean projects named in each repository. The formal proofs were written by AI agents, using GLM models by Z.ai served on GMI Cloud, with literature search by Exa. Steven Enamakel is the founder of OpenHuman and Christel Buchanan is the founder of Living Brain, the systems described in Section~\ref{sec:method}.
+We thank Levent Alp\"oge, the Lean and Mathlib communities, and the authors of the Lean projects credited in each repository. The agents ran on OpenHuman \cite{openhuman}, with GLM models by Z.ai served on GMI Cloud and literature search by Exa. The formal proofs were written by AI agents. Steven Enamakel is the founder of OpenHuman and Christel Buchanan is the founder of Living Brain, two of the systems described here.
 
 \begin{thebibliography}{99}
 \bibitem{alpoge} L. Alp\"oge, Lean proof of the Riemann hypothesis, announced 20 November 2026, \url{https://alpo.ge/remark.pdf}.
-\bibitem{bach90} E. Bach, \emph{Explicit bounds for primality testing and related problems}, Math. Comp. \textbf{55} (1990), 355-380.
-\bibitem{bachsorenson} E. Bach and J. Sorenson, \emph{Explicit bounds for primes in residue classes}, Math. Comp. \textbf{65} (1996), 1717-1735.
-\bibitem{cms} E. Carneiro, M. Milinovich and K. Soundararajan, \emph{Fourier optimization and prime gaps}, Comment. Math. Helv. \textbf{94} (2019), 533-568; arXiv:1708.04122.
-\bibitem{erdos985} S. Enamakel, \emph{Every odd prime has a smaller prime primitive root under GRH: a formalized proof of Erd\H{o}s Problem 985}, 2026, \url{https://github.com/senamakel/erdos-985/tree/main/paper}.
 \bibitem{erdosproblems} T. Bloom, \emph{Erd\H{o}s Problems}, \url{https://www.erdosproblems.com}.
 \bibitem{formalconj} Google DeepMind, \emph{formal-conjectures}, \url{https://github.com/google-deepmind/formal-conjectures}.
-\bibitem{lls} Y. Lamzouri, X. Li and K. Soundararajan, \emph{Conditional bounds for the least quadratic non-residue and related problems}, Math. Comp. \textbf{84} (2015), 2391-2412; arXiv:1309.3595.
 \bibitem{leanfro} Lean FRO and Mathlib Initiative, \emph{Lean verification of the Riemann Hypothesis}, 21 November 2026, \url{https://leanprover-community.github.io/blog/posts/riemann-hypothesis/}.
-\bibitem{li} X.-J. Li, \emph{The positivity of a sequence of numbers and the Riemann hypothesis}, J. Number Theory \textbf{65} (1997), 325-333.
-\bibitem{littlewood} J. E. Littlewood, \emph{Quelques cons\'equences de l'hypoth\`ese que la fonction $\zeta(s)$ de Riemann n'a pas de z\'eros dans le demi-plan $\Re(s)>\frac12$}, C. R. Acad. Sci. Paris \textbf{154} (1912), 263-266.
 \bibitem{livingbrain} \emph{Living Brain}, \url{https://livingbrain.com}.
-\bibitem{mtt} K. McGown, E. Trevi\~no and T. Trudgian, \emph{Resolving Grosswald's conjecture on GRH}, Funct. Approx. Comment. Math. \textbf{55} (2016), 215-225; arXiv:1508.05182.
-\bibitem{nicolas} J.-L. Nicolas, \emph{Petites valeurs de la fonction d'Euler}, J. Number Theory \textbf{17} (1983), 375-388.
 \bibitem{openhuman} \emph{OpenHuman}, \url{https://github.com/tinyhumansai/openhuman}.
 \bibitem{rhrepo} \emph{leanprover-community/riemann-hypothesis}, \url{https://github.com/leanprover-community/riemann-hypothesis}.
-\bibitem{robin} G. Robin, \emph{Grandes valeurs de la fonction somme des diviseurs et hypoth\`ese de Riemann}, J. Math. Pures Appl. \textbf{63} (1984), 187-213.
-\bibitem{rsiralph} \emph{RSI Ralph}, \url{https://github.com/tinyhumansai/rsi-ralph}.
-\bibitem{schoenfeld} L. Schoenfeld, \emph{Sharper bounds for the Chebyshev functions $\theta(x)$ and $\psi(x)$. II}, Math. Comp. \textbf{30} (1976), 337-360.
-\bibitem{selberg} A. Selberg, \emph{On the normal density of primes in small intervals, and the difference between consecutive primes}, Arch. Math. Naturvid. \textbf{47} (1943), no. 6, 87-105.
-\bibitem{speiser} A. Speiser, \emph{Geometrisches zur Riemannschen Zetafunktion}, Math. Ann. \textbf{110} (1934), 514-521.
 \bibitem{sutherland} A. Sutherland, \emph{Verification files for the Lean proof of the Riemann Hypothesis}, \url{https://math.mit.edu/~drew/grh/}.
-\bibitem{titchmarsh27} E. C. Titchmarsh, \emph{A consequence of the Riemann hypothesis}, J. London Math. Soc. \textbf{2} (1927), 247-254.
-\bibitem{washington} L. C. Washington, \emph{Introduction to Cyclotomic Fields}, 2nd ed., Springer, 1997.
-\bibitem{weinberger} P. J. Weinberger, \emph{Exponents of the class groups of complex quadratic fields}, Acta Arith. \textbf{22} (1973), 117-124.
 \end{thebibliography}
 \end{document}
