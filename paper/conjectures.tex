@@ -5,7 +5,28 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{array}
 \usepackage{booktabs}
-\usepackage{alltt}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\definecolor{codebg}{HTML}{F7F8FA}
+\definecolor{coderule}{HTML}{C9D0DA}
+\definecolor{codehead}{HTML}{E9EDF2}
+\definecolor{codekey}{HTML}{1F4E8C}
+\definecolor{codestr}{HTML}{2E7D4F}
+\definecolor{codenum}{HTML}{A8480F}
+\definecolor{codenote}{HTML}{555F6B}
+\lstdefinestyle{code}{basicstyle=\ttfamily\footnotesize,columns=fullflexible,keepspaces=true,
+  showstringspaces=false,upquote=true,aboveskip=0pt,belowskip=0pt}
+% JSON: keys blue, string values green, numbers orange
+\lstdefinelanguage{json}{morestring=[b]",stringstyle=\color{codestr},
+  literate=*{:}{{\textcolor{codenote}{:}}}1 {\{}{{\textcolor{codenote}{\{}}}1
+   {\}}{{\textcolor{codenote}{\}}}}1 {[}{{\textcolor{codenote}{[}}}1 {]}{{\textcolor{codenote}{]}}}1,
+  moredelim=[is][\color{codekey}]{@}{@},moredelim=**[is][\color{codenum}]{!}{!}}
+\lstdefinelanguage{leanlite}{morekeywords={theorem,def},keywordstyle=\color{codekey}\bfseries}
+\tcbset{codebox/.style={enhanced,boxrule=0.5pt,arc=2pt,colback=codebg,colframe=coderule,
+  colbacktitle=codehead,coltitle=black,fonttitle=\ttfamily\footnotesize,
+  left=8pt,right=8pt,top=5pt,bottom=5pt,toptitle=2pt,bottomtitle=2pt,
+  before skip=9pt,after skip=9pt}}
+\newcommand{\fname}[2]{\hspace*{#1em}\texttt{#2}}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning}
 \emergencystretch=3em
@@ -178,32 +199,43 @@ To test the ranking we scored problems that have since been solved, using what w
 
 \subsection*{A loop is a folder} Self-improving loops tend to be slow because changing the agent means changing code. Here the whole environment is text.
 
-\noindent\begin{minipage}{\textwidth}
-\begin{small}\begin{alltt}
-my-loop/
-  rsi.json            what may change, how it is scored, budget, epochs
-  brief.md            the goal, written for the agents
-  hive/
-    hive.json         roles and seats, and the tools each seat may use
-    roles/  seats/    charters and starting prompts
-    context/          what every seat reads
-    constitution.json rules that no edit may break
-    memory.json       what the hive remembers between epochs
-  scorers/            any program that prints METRIC name=value
-  subject/            the thing being improved
-\end{alltt}\end{small}
-\end{minipage}
+\begin{tcolorbox}[codebox,title=my-loop/]
+\footnotesize\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}p{0.31\linewidth}@{}p{0.67\linewidth}@{}}
+\fname{0}{rsi.json} & \textcolor{codenote}{what may change, how it is scored, budget and epochs}\\
+\fname{0}{brief.md} & \textcolor{codenote}{the goal, written for the agents}\\
+\fname{0}{hive/} & \textcolor{codenote}{\emph{the team}}\\
+\fname{1.5}{hive.json} & \textcolor{codenote}{roles and seats, and the tools each seat may use}\\
+\fname{1.5}{roles/, seats/} & \textcolor{codenote}{charters and starting prompts}\\
+\fname{1.5}{context/} & \textcolor{codenote}{what every seat reads}\\
+\fname{1.5}{constitution.json} & \textcolor{codenote}{rules that no edit may break}\\
+\fname{1.5}{memory.json} & \textcolor{codenote}{what the hive remembers between epochs}\\
+\fname{0}{scorers/} & \textcolor{codenote}{any program that prints \texttt{METRIC name=value}}\\
+\fname{0}{subject/} & \textcolor{codenote}{the thing being improved}\\
+\end{tabular}
+\end{tcolorbox}
+
 
 \noindent The part of \lean{rsi.json} that matters is short. This one is from the starter loop, on graph coloring:
-\begin{small}\begin{alltt}
-"subject": \{ "kind": "dir", "path": "subject", "editable": ["coloring.py"] \},
-"score": \{
-  "scorers": [ \{ "id": "colors", "run": "python3 scorers/colors.py" \} ],
-  "decide": \{ "on": "colors", "test": "seeds", "seeds": [1, 2, 3],
-              "direction": "minimize", "target": 6 \} \},
-"budget": \{ "run_usd": 1 \}, "epochs": 3
-\end{alltt}\end{small}
-Since a team is text with a schema, a change to it is a small diff that can be scored, versioned and rolled back. Each design is named by a hash of its contents, so an identical change is not paid for twice, and baseline scores are cached.
+\begin{tcblisting}{codebox,title=rsi.json,listing only,listing options={style=code,language=json}}
+@"subject"@: {
+  @"kind"@: "dir",
+  @"path"@: "subject",
+  @"editable"@: ["coloring.py"]
+},
+@"score"@: {
+  @"scorers"@: [
+    { @"id"@: "colors", @"run"@: "python3 scorers/colors.py", @"timeout_secs"@: !60! }
+  ],
+  @"decide"@: {
+    @"on"@: "colors", @"test"@: "seeds", @"seeds"@: [!1!, !2!, !3!],
+    @"direction"@: "minimize", @"target"@: !6!
+  }
+},
+@"budget"@: { @"run_usd"@: !1! },
+@"epochs"@: !3!
+\end{tcblisting}
+\noindent Since a team is text with a schema, a change to it is a small diff that can be scored, versioned and rolled back. Each design is named by a hash of its contents, so an identical change is not paid for twice, and baseline scores are cached.
 
 \subsection*{Three depths} What is marked editable decides how deep the improvement goes. With the subject alone, agents fix the work. With the subject and the hive, they also rewrite their prompts, roles and shared context, and the next epoch runs the new team if it won. With the hive as the subject, the editors are the thing being graded. This is the recursive step: each generation of the team edits the next.
 
@@ -282,10 +314,10 @@ Every target went through the same steps.
 \begin{enumerate}
 \item \emph{Freeze the statement.} It goes into its own file and is not edited again. If \emph{formal-conjectures} has it, we copy it word for word. The easiest way to finish a hard proof is to weaken what it claims, and with a frozen file that shows up in a diff.
 \item \emph{Make RH an argument.} The main library proves $\mathrm{RH}\Rightarrow X$ and never imports the proof of RH. A last file plugs it in, usually in one line:
-\begin{small}\begin{alltt}
+\begin{tcblisting}{codebox,title=Unconditional/Erdos985Unconditional.lean,listing only,listing options={style=code,language=leanlite}}
 theorem erdos_985 : Erdos985.Erdos985Statement :=
   Erdos985.erdos_985_of_GRH LFunction_ne_zero_of_half_lt_re
-\end{alltt}\end{small}
+\end{tcblisting}
 \item \emph{Write the blueprint.} Every step becomes a Lean statement before anyone proves it, with a table of what Mathlib has, what the RH library has and what is missing.
 \item \emph{Split by interface.} Steps that depend only on each other's statements go to different agents on different branches.
 \item \emph{Split by range.} Large values are handled by analysis and small ones by computation. The work is in making the ranges meet.
