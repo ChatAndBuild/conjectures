@@ -3,6 +3,7 @@
 \usepackage{amsmath,amssymb}
 \usepackage{microtype}
 \usepackage[hidelinks]{hyperref}
+\usepackage{array}
 \usepackage{booktabs}
 \usepackage{alltt}
 \usepackage{tikz}
@@ -31,7 +32,7 @@
 
 \begin{document}
 \begin{abstract}
-Between August and November 2026 we built a system of agents for attacking open conjectures. When Levent Alp\"oge released a Lean proof of the Riemann hypothesis on 20 November, we used it to produce seventeen Lean developments of consequences of RH in about three days. This paper is about how the work was organized. We describe how the habits of eleven mathematicians became agent roles, how an atlas of 2{,}196 problems decided where to look, how RSI Ralph lets a team of agents edit its own prompts and tools while a scorer it cannot touch decides what is kept, and how a persistent memory was used to choose targets. We then follow several targets through their decomposition: what was split off, which piece held everything up, and how long each step took according to the commit logs. The mathematics is in the repositories.
+Between August and November 2026 we built a system of agents for attacking open conjectures. When Levent Alp\"oge released a Lean proof of the Riemann hypothesis on 20 November, we used it to produce seventeen Lean developments of consequences of RH in about three days. This paper is about how the work was organized. We describe how the habits of eleven mathematicians became agent roles, how an atlas of 2{,}196 problems decided where to look, how RSI Ralph lets a team of agents edit its own prompts and tools while a scorer it cannot touch decides what is kept, and how Living Brain, a persistent source-linked memory, was used to choose targets. We set out its scoring and the BrainBench evaluation that would measure its effect. We then follow several targets through their decomposition: what was split off, which piece held everything up, and how long each step took according to the commit logs. The mathematics is in the repositories.
 \end{abstract}
 \maketitle
 
@@ -188,13 +189,60 @@ Since a team is text with a schema, a change to it is a small diff that can be s
 \]
 The empty template, with one gap on each side, scores $0.35$, so filling a gap moves the score before the problem is settled. The scorer does not trust the candidate's own theorem. It writes a fresh file that states the conjecture at its exact type and asks Lean whether the candidate's proof fits. For larger targets the ladder is a list of intermediate Lean statements, each with a weight.
 
-\section{Choosing targets: the memory}
+\section{Living Brain: memory across sessions}\label{sec:memory}
 
-The proof of RH turned a question about difficulty into a question about dependence. Which problems had been waiting for exactly this? We had stored papers, proof blueprints, harness logs and the atlas in Living Brain \cite{livingbrain}, which compiles captured material into linked, versioned pages that keep their sources. Searching it gave candidates of the form ``RH implies $X$'' that need nothing beyond what the new proof covers.
+A conjecture outlives any one session. Agents come and go, and what they learned has to be somewhere the next one will look. We looked for a memory system that could hold papers, proof blueprints, harness data, the atlas and the reasons that paths failed, and Living Brain \cite{livingbrain} was the first that suited this work. That is our experience with one use case and says nothing general about other systems. The roles stayed separate: Living Brain carried context, OpenHuman ran the agents, RSI Ralph improved the workflow, and Lean checked the proofs.
 
-Knowing what to leave out mattered as much. Artin's primitive root conjecture needs the hypothesis for fields that the proof does not reach. Binary Goldbach and the twin prime conjecture are not known to follow from RH. We recorded why each of these failed so that a later session would not rediscover it. The proof's own library was a second source: at 17 million lines it contains machinery that other targets need, such as the Kronecker-Weber theorem, and finding the right theorem in it was often harder than using it.
+\subsection*{Four operations} \emph{Capture} adds harness data, blueprints, papers and the atlas. \emph{Compile} organizes them into linked, versioned topic pages that keep their sources, so an agent can recover a result together with where it came from. \emph{Recall} surfaces candidates and explains why other leads are out of scope. \emph{Reuse} starts a session with the relevant context and saves what it found, including what failed. In the conjectures workspace part of the capture is automatic: an hourly script sends documentation, commit messages, pull requests (including abandoned ones) and unmerged branches. Reasoning that never reaches a commit has to be written by hand.
 
-Recall proposes, and a separate scoping pass checks. For several targets an agent first read the primary sources and the two Lean libraries and wrote a report. The report for \repo{abelian-erh} corrected five points in the brief it was given. One planned step, a functional equation, was unnecessary, because the library already had a stronger statement. Two pieces listed as work were already in Mathlib. The same report found that the memory held the brief but no earlier attempts on that target. The memory helped us choose where to dig; the sources told us what was there.
+\subsection*{Choosing targets} The proof of RH turned a question about difficulty into a question about dependence. Which problems had been waiting for exactly this? Searching the memory gave candidates of the form ``RH implies $X$'' that need nothing beyond what the new proof covers. Knowing what to leave out mattered as much. Artin's primitive root conjecture needs the hypothesis for fields that the proof does not reach. Binary Goldbach and the twin prime conjecture are not known to follow from RH. We recorded why each of these failed so that a later session would not rediscover it. The proof's own library was a second source: at 17 million lines it contains machinery that other targets need, such as the Kronecker-Weber theorem, and finding the right theorem in it was often harder than using it.
+
+\subsection*{Recall proposes, scoping checks} For several targets an agent first read the primary sources and the two Lean libraries and wrote a report. The report for \repo{abelian-erh} corrected five points in the brief it was given. One planned step, a functional equation, was unnecessary, because the library already had a stronger statement. Two pieces listed as work were already in Mathlib. The same report found that the memory held the brief but no earlier attempts on that target. The memory helped us choose where to dig; the sources told us what was there.
+
+\subsection*{Four decisions about a memory} Living Brain keeps four scores, and each answers a different question (Table~\ref{tab:scores}). For placement the margin matters as well as the value. When the best and the next-best page are close, placement is ambiguous and should be treated that way. A connection score does not say that the link was followed during retrieval, and surfacing an item does not authorize an action outside the system.
+
+\begin{table}[ht]
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.42\textwidth}>{\raggedright\arraybackslash}p{0.31\textwidth}@{}}
+\toprule
+Score & Decides, and from what & Failure it guards against\\
+\midrule
+Memory Worthiness (MWS) & whether an item is kept as durable, provisional or source only; from durability, impact, recurrence, novelty, future utility, extraction confidence and relevance, less penalties & losing a theorem dependency, a blueprint or a dead end\\
+\addlinespace
+Placement Fit (PFS) & where it belongs; from semantic and lexical similarity, entity overlap, relation, time, graph proximity and past routing & filing evidence under the wrong problem, or without its source and date\\
+\addlinespace
+Connection Resonance (CRS) & whether two items should be linked; from meaning, evidence, time, observed utility and complementarity, against duplication and staleness & missing that a lemma, RH or GRH, and a candidate target belong together\\
+\addlinespace
+Re-entry Priority (RPS) & whether and when it returns; from task fit, connection strength, urgency, open commitments, recurrence, impact, affinity and new information, against fatigue & resuming a proof, or picking the next target, without the context\\
+\bottomrule
+\end{tabular}
+\medskip
+\caption{The four memory scores and what each protects in a conjecture workflow.}\label{tab:scores}
+\end{table}
+
+These are separate from the atlas's opportunity score, which ranks problems, and from RSI Ralph's score, which accepts or rejects a change. None of them measures whether a proof is correct.
+
+\subsection*{Brain Health} Brain Health describes the state of a memory: whether it is current, set up and under stress. It has three signals, each between 0 and 100. With component scores on that scale,
+\begin{align*}
+\text{Freshness}&=0.5\,A+0.3\,C+0.2\,G,\\
+\text{Readiness}&=0.30\,P+0.25\,E+0.30\,F+0.15\,I-\text{penalty}.
+\end{align*}
+Here $A$ is recent activity, $C$ and $G$ are decayed activity from completed sources and from changes, $P$ is page-count coverage, $E$ is embedding coverage, $F$ is profile completeness, $I$ is the integrity of contested pages, and the penalty for failures and contested pages is capped. Strain is a saturating weighted measure of failures, backlog, contested or deprecated pages, and changes or connections that nobody has acknowledged. Older activity decays exponentially, and totals saturate:
+\[
+D(a,h)=2^{-a/h},\qquad S(x,k)=100\bigl(1-e^{-\max(0,x)/k}\bigr),
+\]
+for an event of age $a$ with half-life $h$, and a total $x$ with scale $k$. In this programme Freshness would show whether the proof of RH, the latest papers and the agents' findings were in. Readiness would show whether target statements, dependencies and blueprints could be retrieved. Strain would show whether stale or conflicting context could mislead an agent.
+
+\subsection*{BrainBench} Whether memory makes the work better is a separate question, and BrainBench is the way we propose to answer it. Runs come in matched pairs, with memory and without, sharing the model, agent roles, context budget and compute. The evaluation has two stages.
+\begin{enumerate}
+\item \emph{Target selection.} Both arms rank candidate problems against an expert-labelled set of consequences that are in scope. Measure precision and recall among the top $k$,
+\[
+P_k=\frac{|R_k\cap T|}{k},\qquad \mathrm{Rec}_k=\frac{|R_k\cap T|}{|T|},
+\]
+where $R_k$ is an arm's top $k$ and $T$ is the labelled set.
+\item \emph{Proof.} Both arms attempt the same conjectures. Measure the time to find a needed theorem, the time to a first proof that Lean accepts, the number of accepted proofs, repeated dead ends, cost and latency.
+\end{enumerate}
+We have not run this evaluation. What this case shows is that recall was used to find targets. It does not show that MWS, PFS, CRS, RPS or Brain Health caused any proof.
 
 \section{How a target is broken down}\label{sec:break}
 
@@ -287,7 +335,7 @@ Target & First version & Full version & What took the time\\
 
 \subsection*{What did not work} Our sweep of the open Erd\H{o}s problems for new consequences of RH found nothing we kept. Most of what looked attackable was solved, already claimed or out of reach. One candidate, part of Problem 404, had good numerical support and was dropped when no proof plan survived. Several first guesses about who had proved what were wrong, and were corrected against the papers.
 
-\subsection*{Limits of the evidence} We ran no controlled comparison. The proofs show that the statements hold; they do not show how much the memory, the roles or the self-editing contributed, and the arrival of a proof of RH did most of the work. A fair test would run the same targets with the same model and budget, with and without each component, and measure how well each ranks an expert list of targets, the time to a first accepted proof, repeated dead ends, and cost. Our checks link against the community build of \cite{rhrepo} and do not repeat the kernel checks of \cite{sutherland}.
+\subsection*{Limits of the evidence} We ran no controlled comparison. The proofs show that the statements hold; they do not show how much the memory, the roles or the self-editing contributed, and the arrival of a proof of RH did most of the work. The BrainBench design in Section~\ref{sec:memory} would test the memory, and the same matched runs could be repeated for the roles and the self-editing. Our checks link against the community build of \cite{rhrepo} and do not repeat the kernel checks of \cite{sutherland}.
 
 \section*{Acknowledgments and disclosure}
 
