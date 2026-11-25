@@ -30,6 +30,19 @@
 \author[S. Enamakel and C. Buchanan]{\authorblock}
 \date{November 2026}
 
+% centered abstract heading on its own line, in place of amsart's run-in label
+\makeatletter
+\renewenvironment{abstract}{%
+  \global\setbox\abstractbox=\vtop\bgroup
+  \normalfont\Small
+  \list{}{\labelwidth\z@ \leftmargin3pc \rightmargin\leftmargin
+    \listparindent\normalparindent \itemindent\z@ \parsep\z@ \@plus\p@
+    \let\fullwidthdisplay\relax}%
+  \item[]\vspace*{10pt}\centerline{\normalsize\scshape Abstract}\par\vspace{5pt}\noindent\ignorespaces
+}{\endlist\egroup
+  \ifx\@setabstract\relax \@setabstracta \fi}
+\makeatother
+
 \begin{document}
 \begin{abstract}
 Between August and November 2026 we built a system of agents for attacking open conjectures. When Levent Alp\"oge released a Lean proof of the Riemann hypothesis on 20 November, we used it to produce seventeen Lean developments of consequences of RH in about three days. This paper is about how the work was organized. We describe how the habits of eleven mathematicians became agent roles, how an atlas of 2{,}196 problems decided where to look, how RSI Ralph lets a team of agents edit its own prompts and tools while a scorer it cannot touch decides what is kept, and how Living Brain, a persistent source-linked memory, was used to choose targets. We set out its scoring and the BrainBench evaluation that would measure its effect. We then follow several targets through their decomposition: what was split off, which piece held everything up, and how long each step took according to the commit logs. The mathematics is in the repositories.
