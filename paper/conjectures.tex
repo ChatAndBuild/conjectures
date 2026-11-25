@@ -233,6 +233,8 @@ The sample also shows what the atlas could not do. Rank alone would not have cho
 
 \section{RSI Ralph: a loop that edits its own team}\label{sec:loop}
 
+\subsection*{Why we needed a recursive loop} A conjecture does not come with a list of the tools it will need. One target needs a library search, another a numerical experiment, another a paper read to the last lemma, and another a checker for ten trillion cases. The same holds for the team: which roles to run, what each should read, how literature should be searched, what is worth remembering, and when to give up on a route. We could not write down the right setup in advance, and tuning it by hand after every failed run was slow. Each change also needed a fair test, since a prompt that reads better often works no better. So we made the setup part of the problem. The loop works on the mathematics and on the harness that does the mathematics (its prompts, roles, tools and memory), and both are judged by the same kind of evidence. That is the sense in which it is recursive: what the team learns about how to work becomes the team that runs next.
+
 \subsection*{From Ralph to RSI Ralph} A Ralph loop gives an agent the same prompt again and again, and only the files it leaves behind carry over. Adding a goal lets the loop stop. In both, the agent is fixed: its prompt, its tools and its teammates do not change. \trepo{rsi-ralph} \cite{rsiralph} drops that assumption. It runs in epochs, tests every candidate against the current best, and lets a candidate change the team as well as the work.
 
 \begin{figure}[ht]
@@ -304,11 +306,13 @@ The sample also shows what the atlas could not do. Rank alone would not have cho
 \begin{cases}
 1 & \text{Lean accepts the pinned statement, or its negation, with no debt;}\\
 0.75 & \text{it accepts, but with debt;}\\
-0.2+\dfrac{0.3}{1+g} & \text{the best side elaborates, with } g \text{ gaps left (\lean{sorry});}\\[2mm]
+0.2+\dfrac{0.3}{1+g} & \text{the best side elaborates, with } g \text{ gaps (uses of Lean's \lean{sorry});}\\[2mm]
 \dfrac{0.1}{1+e} & \text{it does not elaborate, with } e \text{ errors.}
 \end{cases}
 \]
-The empty template, with one gap on each side, scores $0.35$, so filling a gap moves the score before the problem is settled. The scorer does not trust the candidate's own theorem. It writes a fresh file that states the conjecture at its exact type and asks Lean whether the candidate's proof fits. For larger targets the ladder is a list of intermediate Lean statements, each with a weight.
+Here \lean{sorry} is a Lean keyword. It stands in for a missing proof: Lean accepts the file with a warning, checks everything around the hole, and records that the theorem depends on an unproved step. Counting uses of \lean{sorry} therefore counts the steps still to be proved, and a theorem is finished only when none is left, in it or in anything it relies on. The empty template has one \lean{sorry} on each side and scores $0.35$, so filling gaps moves the score before the problem is settled. The scorer does not trust the candidate's own theorem. It writes a fresh file that states the conjecture at its exact type and asks Lean whether the candidate's proof fits. For larger targets the ladder is a list of intermediate Lean statements, each with a weight.
+
+\subsection*{Once the harness was good enough} The return came after the first target. By the time Erd\H{o}s 985 was finished, the harness had a way to freeze a statement, split it, search the libraries and the literature, recall what had failed, check finite ranges, and refuse anything Lean would not accept. It also had the analytic toolkit that 985 produced. The next targets started from there, and in our experience they were far easier. The work of a new conjecture shrank to stating it, finding its split and running the loop. In the case studies of Section~\ref{sec:cases}, most targets had a first version within about an hour of an empty repository, several of them in progress on the same day. What remained slow was specific to each target: a large computation, a range that would not close, or a sharper constant. We read this as the loop paying for itself, although some of the gain comes from the shared toolkit and from the proof of RH, and we have not measured the parts separately.
 
 \section{Living Brain: memory across sessions}\label{sec:memory}
 
@@ -397,7 +401,7 @@ theorem erdos_985 : Erdos985.Erdos985Statement :=
 \caption{The shape of a target.}\label{fig:shape}
 \end{figure}
 
-\subsection*{The rule about rebuilding} An agent's report was never accepted as evidence. On 22 November a stale checkout printed a hidden gap under a theorem believed to be finished, and the rule dates from then. Lean's \lean{\#print axioms} lists everything a theorem rests on, so ``done'' has a mechanical meaning: the project builds, and the list contains only Lean's three standard axioms and one entry per evaluated finite computation.
+\subsection*{The rule about rebuilding} An agent's report was never accepted as evidence. On 22 November a stale checkout revealed a \lean{sorry} underneath a theorem believed to be finished, and the rule dates from then. Lean's \lean{\#print axioms} lists everything a theorem rests on, so ``done'' has a mechanical meaning: the project builds, and the list contains only Lean's three standard axioms and one entry per evaluated finite computation.
 
 \subsection*{Two kinds of agent work} Agents wrote the checkers for the finite ranges and estimated their cost, but did not launch the large runs. An early attempt to run several at once overloaded the build machine, so the big computations went last, one at a time. Each checker comes with a Lean proof that if it accepts then the theorem holds on that range. The run itself then trusts the Lean compiler, which the axiom list records.
 
@@ -405,7 +409,7 @@ theorem erdos_985 : Erdos985.Erdos985Statement :=
 
 Times below are read from the commit logs and given in UTC. They measure elapsed time between commits, so they include waiting and exclude thinking that left no commit.
 
-\subsection*{Erd\H{o}s 985: one problem first} \textup{(\repo{erdos-985} \cite{r-erdos-985})} The loop learned the job on this target, which asks for a prime primitive root below every odd prime. The first commit, on 22 November at 16:34, reduced everything to two named gaps, both explicit estimates from the literature. The blueprint listed eight prerequisites (P1 to P8) for closing them and marked which were in Mathlib. It then compared two routes. One needed a general theorem that Mathlib lacks but kept the published constants. The other avoided that theorem and gave worse constants. A small table settled the choice by pricing each constant in computation:
+\subsection*{Erd\H{o}s 985: one problem first} \textup{(\repo{erdos-985} \cite{r-erdos-985})} The loop learned the job on this target, which asks for a prime primitive root below every odd prime. The first commit, on 22 November at 16:34, reduced everything to two gaps marked with Lean's \lean{sorry}, both explicit estimates from the literature. The blueprint listed eight prerequisites (P1 to P8) for closing them and marked which were in Mathlib. It then compared two routes. One needed a general theorem that Mathlib lacks but kept the published constants. The other avoided that theorem and gave worse constants. A small table settled the choice by pricing each constant in computation:
 \begin{center}
 \small
 \begin{tabular}{@{}lrrrrr@{}}
@@ -415,7 +419,7 @@ Primes to check, up to & $4.3\cdot10^7$ & $4.1\cdot10^8$ & $8.8\cdot10^9$ & $2.9
 \bottomrule
 \end{tabular}
 \end{center}
-An audit of the RH library put its constants for the second route between $10^4$ and $10^6$, which would have pushed the computation past $10^{20}$. The harder route was the cheap one. Three pieces (the missing theorem, the growth bounds and the numerical constants) were then committed within the same minute, at 16:48. The first gap closed at 17:17 and the second at 17:28, and the theorem had no gaps at 17:35, an hour after the first commit. The mathematics is written up in \cite{paper985}. What made this target useful was the byproduct: its analytic toolkit is a dependency of every other development.
+An audit of the RH library put its constants for the second route between $10^4$ and $10^6$, which would have pushed the computation past $10^{20}$. The harder route was the cheap one. Three pieces (the missing theorem, the growth bounds and the numerical constants) were then committed within the same minute, at 16:48. The first gap closed at 17:17 and the second at 17:28, and the theorem was free of \lean{sorry} at 17:35, an hour after the first commit. The mathematics is written up in \cite{paper985}. What made this target useful was the byproduct: its analytic toolkit is a dependency of every other development.
 
 \subsection*{Grosswald: the quick part and the slow part} \textup{(\repo{grosswald-grh} \cite{r-grosswald-grh})} Here the split was by range. The argument above $2.5\cdot10^{15}$, modelled on a published proof, was assembled 42 minutes after the repository was created. The range below it was stated openly as a hypothesis, since the literature covers it by a large computation. Removing that hypothesis took until 25 November. The threshold was brought down to $10^{13}$ by a tree search over prime factors, the rest was cut into 2{,}502 independent chunks, and the whole evaluation cost about $3.5$ million CPU seconds. Progress on a target like this is easy to overstate: it can look finished after its first hour.
 
@@ -450,7 +454,7 @@ Target & First version & Full version & What took the time\\
 
 \subsection*{First estimates of cost were too high} A first proof often landed above the published constant, and the estimated cost of closing the gap looked prohibitive. Each time the obstacle was one lossy step, and keeping that step exact removed it.
 
-\subsection*{Missing theory should be visible} When Mathlib lacked a classical theorem, it entered as a named hypothesis and never as a gap. The theorem could then be finished and the hypothesis discharged separately, often from the RH library.
+\subsection*{Missing theory should be visible} When Mathlib lacked a classical theorem, it entered as a named hypothesis and never as a \lean{sorry}. The theorem could then be finished and the hypothesis discharged separately, often from the RH library.
 
 \subsection*{A judge that cannot be argued with} Changes to the team are safe to automate because the scorer does not read explanations. This worked for mathematics because the score is a proof check. It would be harder to carry over to work where the score is a model's opinion.
 
