@@ -26,7 +26,7 @@
 \tikzset{box/.style={draw,rounded corners=2pt,align=center,font=\small,inner sep=5pt},
   arr/.style={-{Stealth[length=5pt]},semithick}}
 
-\title[How we attacked conjectures with agents]{How we attacked conjectures with agents:\\ decomposition, self-improving loops and memory}
+\title[How we attacked 17 conjectures with agents]{How we attacked 17 conjectures with agents:\\ decomposition, self-improving loops and memory}
 \author[S. Enamakel and C. Buchanan]{\authorblock}
 \date{November 2026}
 
@@ -38,7 +38,7 @@ Between August and November 2026 we built a system of agents for attacking open 
 
 \section{Introduction}
 
-We started trying to break conjectures with agents in August 2026. By 25 November we had machine-checked Lean~4 developments of seventeen consequences of the Riemann hypothesis (RH), or of its generalization to Dirichlet $L$-functions (GRH). All are in \url{https://github.com/ChatAndBuild/conjectures}.
+We started trying to break conjectures with agents in August 2026. By 25 November we had machine-checked Lean~4 developments of seventeen consequences of the Riemann hypothesis (RH), or of its generalization to Dirichlet $L$-functions (GRH). Each has its own repository, and all are collected in \href{https://github.com/ChatAndBuild/conjectures}{\texttt{ChatAndBuild/conjectures}} \cite{conjectures}.
 
 The result depended on four things. We studied how strong mathematicians solve problems and turned that into agents. We mapped which open problems were worth attacking. We built a loop in which agents improve both the work and the team doing it. Then we got lucky: Alp\"oge's proof of RH \cite{alpoge} came out, and we had the material at hand to see what it unlocked. Groundwork took three months and the seventeen developments took three days, so most of this paper concerns the groundwork and the way it was used.
 
@@ -48,13 +48,13 @@ The result depended on four things. We studied how strong mathematicians solve p
 \toprule
 When (2026) & What happened & Repository\\
 \midrule
-11 Aug to 1 Sep & studied eleven mathematicians; first team of agents & \repo{math-superagent}\\
+11 Aug to 1 Sep & studied eleven mathematicians; first team of agents & \repo{math-superagent} \cite{superagent}\\
 30 to 31 Aug & rebuilt the agent so that Lean alone judges proofs & math-agent\\
 Sep to Nov & built the atlas of 2{,}196 problems & \\
-from 10 Oct & built RSI Ralph, a self-improving loop written in JSON & \trepo{rsi-ralph}\\
-21 to 27 Oct & first loops on open Erd\H{o}s problems & \trepo{supermath}\\
-20 Nov & Lean proof of RH released & \cite{rhrepo}\\
-22 to 25 Nov & targets chosen, split and proved & \href{https://github.com/ChatAndBuild/conjectures}{\texttt{conjectures}}\\
+from 10 Oct & built RSI Ralph, a self-improving loop written in JSON & \trepo{rsi-ralph} \cite{rsiralph}\\
+21 to 27 Oct & first loops on open Erd\H{o}s problems & \trepo{supermath} \cite{supermath}\\
+20 Nov & Lean proof of RH released & \href{https://github.com/leanprover-community/riemann-hypothesis}{\texttt{riemann-hypothesis}} \cite{rhrepo}\\
+22 to 25 Nov & targets chosen, split and proved & \href{https://github.com/ChatAndBuild/conjectures}{\texttt{conjectures}} \cite{conjectures}\\
 \bottomrule
 \end{tabular}
 \medskip
@@ -65,13 +65,32 @@ from 10 Oct & built RSI Ralph, a self-improving loop written in JSON & \trepo{rs
 
 \begin{table}[ht]
 \small
-\begin{tabular}{@{}p{0.2\textwidth}p{0.72\textwidth}@{}}
+\begin{tabular}{@{}rll@{}}
 \toprule
-Named conjectures & \repo{erdos-985}, \repo{lindelof-rh}, \repo{density-rh}, \repo{grosswald-grh}, \repo{weinberger-grh} (Euler's idoneal numbers), \repo{abelian-erh} (extended RH, abelian fields)\\
+ & Result & Repository\\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Named conjectures}}\\
+1 & Erd\H{o}s 985: every odd prime $p$ has a prime primitive root below $p$ & \repo{erdos-985} \cite{r-erdos-985}\\
+2 & Lindel\"of hypothesis, for $\zeta$ and Dirichlet $L$-functions & \repo{lindelof-rh} \cite{r-lindelof-rh}\\
+3 & density hypothesis for $\zeta$ & \repo{density-rh} \cite{r-density-rh}\\
+4 & Grosswald's conjecture on least primitive roots & \repo{grosswald-grh} \cite{r-grosswald-grh}\\
+5 & Euler's 65 idoneal numbers are the only ones & \repo{weinberger-grh} \cite{r-weinberger-grh}\\
+6 & extended RH for abelian number fields & \repo{abelian-erh} \cite{r-abelian-erh}\\
 \addlinespace
-Equivalent to RH & \repo{robin-rh}, \repo{nicolas-rh}, \repo{li-criterion-rh}, \repo{speiser-rh}, \repo{mertens-rh}\\
+\multicolumn{3}{@{}l}{\emph{Equivalent to RH}}\\
+7 & Robin's inequality & \repo{robin-rh} \cite{r-robin-rh}\\
+8 & Nicolas' inequality & \repo{nicolas-rh} \cite{r-nicolas-rh}\\
+9 & Li's criterion, positivity & \repo{li-criterion-rh} \cite{r-li-criterion-rh}\\
+10 & Speiser's theorem & \repo{speiser-rh} \cite{r-speiser-rh}\\
+11 & Mertens bound & \repo{mertens-rh} \cite{r-mertens-rh}\\
 \addlinespace
-Further theorems & \repo{lls-grh} (least non-residues, $L(1,\chi)$), \repo{bach-sorenson-grh} (primes in progressions), \repo{schoenfeld-rh} (explicit $\psi,\theta,\pi$), \repo{cramer-rh} (prime gaps), \repo{erdos-770}, \repo{erdos-233}\\
+\multicolumn{3}{@{}l}{\emph{Further theorems under RH or GRH}}\\
+12 & least non-residues, $L(1,\chi)$, class numbers & \repo{lls-grh} \cite{r-lls-grh}\\
+13 & least prime in a residue class & \repo{bach-sorenson-grh} \cite{r-bach-sorenson-grh}\\
+14 & explicit bounds for $\psi$, $\theta$ and $\pi$ & \repo{schoenfeld-rh} \cite{r-schoenfeld-rh}\\
+15 & prime gaps and mean square & \repo{cramer-rh} \cite{r-cramer-rh}\\
+16 & Erd\H{o}s 770, part (iii) & \repo{erdos-770} \cite{r-erdos-770}\\
+17 & RH bounds toward Erd\H{o}s 233 & \repo{erdos-233} \cite{r-erdos-233}\\
 \bottomrule
 \end{tabular}
 \medskip
@@ -107,7 +126,7 @@ Perelman & finish a stalled programme by finding the missing estimate\\
 
 \subsection*{Where the eleven disagree} The disagreements taught us more than the agreements. Where all eleven agree, the system has a requirement. Where they split, it has a setting that somebody chose, perhaps without noticing. Our first runtime changed course after two unproductive attempts. We had meant that as a budget limit, but it also ruled out Grothendieck's way of working, where the goal does not move for a long time while the theory around it grows. A counter cannot tell that apart from being stuck. We made these settings explicit as \emph{schools} that share a workspace: one attacks the problem where it stands and computes first, one enlarges the setting, and one tries to break the statement before proving it.
 
-\subsection*{The first loop} In \repo{math-superagent} one attempt is followed by several questions asked at once: what did we learn, is there a pattern in the data, is there another angle, is the statement false, what does Lean make of the proposition that the most rests on? The answers are merged and a router decides whether to retry, diversify or stop. One run showed why stopping needs its own machinery. The loop recorded a solution at minute 29, but teams that had no reason to retire kept working, and the run was killed at minute 96, with \$32 of its \$35 spent after the problem was solved. The other lesson from this period was a rule that has not changed since: an agent may decide what to try next, and only Lean decides whether a proof is correct.
+\subsection*{The first loop} In \repo{math-superagent} \cite{superagent} one attempt is followed by several questions asked at once: what did we learn, is there a pattern in the data, is there another angle, is the statement false, what does Lean make of the proposition that the most rests on? The answers are merged and a router decides whether to retry, diversify or stop. One run showed why stopping needs its own machinery. The loop recorded a solution at minute 29, but teams that had no reason to retire kept working, and the run was killed at minute 96, with \$32 of its \$35 spent after the problem was solved. The other lesson from this period was a rule that has not changed since: an agent may decide what to try next, and only Lean decides whether a proof is correct.
 
 \section{An atlas of problems}
 
@@ -123,7 +142,7 @@ To test the ranking we scored problems that have since been solved, using what w
 
 \section{RSI Ralph: a loop that edits its own team}\label{sec:loop}
 
-\subsection*{From Ralph to RSI Ralph} A Ralph loop gives an agent the same prompt again and again, and only the files it leaves behind carry over. Adding a goal lets the loop stop. In both, the agent is fixed: its prompt, its tools and its teammates do not change. \trepo{rsi-ralph} drops that assumption. It runs in epochs, tests every candidate against the current best, and lets a candidate change the team as well as the work.
+\subsection*{From Ralph to RSI Ralph} A Ralph loop gives an agent the same prompt again and again, and only the files it leaves behind carry over. Adding a goal lets the loop stop. In both, the agent is fixed: its prompt, its tools and its teammates do not change. \trepo{rsi-ralph} \cite{rsiralph} drops that assumption. It runs in epochs, tests every candidate against the current best, and lets a candidate change the team as well as the work.
 
 \begin{figure}[ht]
 \centering
@@ -177,7 +196,7 @@ Since a team is text with a schema, a change to it is a small diff that can be s
 
 \subsection*{What the loop may not do} A loop that can change itself will find ways to pass that are not improvements, so three things are out of its reach. The scorer runs in our code. The constitution lists what no edit may break. Edits outside the editable paths fail the candidate before it is scored. A language model may act as a judge, but only to hold a candidate back; it can never accept one. Every model call goes through a gateway that stops the run at its spending cap.
 
-\subsection*{The mathematical version} \trepo{supermath} turns one conjecture into one loop folder. The statement is frozen, and the seats are a lead, a prover and a refuter. Prover and refuter each work in their own checkout, so the attempt to disprove runs beside the attempt to prove. A candidate's score is a ladder:
+\subsection*{The mathematical version} \trepo{supermath} \cite{supermath} turns one conjecture into one loop folder. The statement is frozen, and the seats are a lead, a prover and a refuter. Prover and refuter each work in their own checkout, so the attempt to disprove runs beside the attempt to prove. A candidate's score is a ladder:
 \[
 \text{score}=
 \begin{cases}
@@ -197,7 +216,7 @@ A conjecture outlives any one session. Agents come and go, and what they learned
 
 \subsection*{Choosing targets} The proof of RH turned a question about difficulty into a question about dependence. Which problems had been waiting for exactly this? Searching the memory gave candidates of the form ``RH implies $X$'' that need nothing beyond what the new proof covers. Knowing what to leave out mattered as much. Artin's primitive root conjecture needs the hypothesis for fields that the proof does not reach. Binary Goldbach and the twin prime conjecture are not known to follow from RH. We recorded why each of these failed so that a later session would not rediscover it. The proof's own library was a second source: at 17 million lines it contains machinery that other targets need, such as the Kronecker-Weber theorem, and finding the right theorem in it was often harder than using it.
 
-\subsection*{Recall proposes, scoping checks} For several targets an agent first read the primary sources and the two Lean libraries and wrote a report. The report for \repo{abelian-erh} corrected five points in the brief it was given. One planned step, a functional equation, was unnecessary, because the library already had a stronger statement. Two pieces listed as work were already in Mathlib. The same report found that the memory held the brief but no earlier attempts on that target. The memory helped us choose where to dig; the sources told us what was there.
+\subsection*{Recall proposes, scoping checks} For several targets an agent first read the primary sources and the two Lean libraries and wrote a report. The report for \repo{abelian-erh} \cite{r-abelian-erh} corrected five points in the brief it was given. One planned step, a functional equation, was unnecessary, because the library already had a stronger statement. Two pieces listed as work were already in Mathlib. The same report found that the memory held the brief but no earlier attempts on that target. The memory helped us choose where to dig; the sources told us what was there.
 
 \subsection*{Four decisions about a memory} Living Brain keeps four scores, and each answers a different question (Table~\ref{tab:scores}). For placement the margin matters as well as the value. When the best and the next-best page are close, placement is ambiguous and should be treated that way. A connection score does not say that the link was followed during retrieval, and surfacing an item does not authorize an action outside the system.
 
@@ -284,7 +303,7 @@ theorem erdos_985 : Erdos985.Erdos985Statement :=
 
 Times below are read from the commit logs and given in UTC. They measure elapsed time between commits, so they include waiting and exclude thinking that left no commit.
 
-\subsection*{Erd\H{o}s 985: one problem first} The loop learned the job on this target, which asks for a prime primitive root below every odd prime. The first commit, on 22 November at 16:34, reduced everything to two named gaps, both explicit estimates from the literature. The blueprint listed eight prerequisites (P1 to P8) for closing them and marked which were in Mathlib. It then compared two routes. One needed a general theorem that Mathlib lacks but kept the published constants. The other avoided that theorem and gave worse constants. A small table settled the choice by pricing each constant in computation:
+\subsection*{Erd\H{o}s 985: one problem first} \textup{(\repo{erdos-985} \cite{r-erdos-985})} The loop learned the job on this target, which asks for a prime primitive root below every odd prime. The first commit, on 22 November at 16:34, reduced everything to two named gaps, both explicit estimates from the literature. The blueprint listed eight prerequisites (P1 to P8) for closing them and marked which were in Mathlib. It then compared two routes. One needed a general theorem that Mathlib lacks but kept the published constants. The other avoided that theorem and gave worse constants. A small table settled the choice by pricing each constant in computation:
 \begin{center}
 \small
 \begin{tabular}{@{}lrrrrr@{}}
@@ -294,15 +313,15 @@ Primes to check, up to & $4.3\cdot10^7$ & $4.1\cdot10^8$ & $8.8\cdot10^9$ & $2.9
 \bottomrule
 \end{tabular}
 \end{center}
-An audit of the RH library put its constants for the second route between $10^4$ and $10^6$, which would have pushed the computation past $10^{20}$. The harder route was the cheap one. Three pieces (the missing theorem, the growth bounds and the numerical constants) were then committed within the same minute, at 16:48. The first gap closed at 17:17 and the second at 17:28, and the theorem had no gaps at 17:35, an hour after the first commit. What made this useful was the byproduct: its analytic toolkit is a dependency of every other development.
+An audit of the RH library put its constants for the second route between $10^4$ and $10^6$, which would have pushed the computation past $10^{20}$. The harder route was the cheap one. Three pieces (the missing theorem, the growth bounds and the numerical constants) were then committed within the same minute, at 16:48. The first gap closed at 17:17 and the second at 17:28, and the theorem had no gaps at 17:35, an hour after the first commit. The mathematics is written up in \cite{paper985}. What made this target useful was the byproduct: its analytic toolkit is a dependency of every other development.
 
-\subsection*{Grosswald: the quick part and the slow part} Here the split was by range. The argument above $2.5\cdot10^{15}$, modelled on a published proof, was assembled 42 minutes after the repository was created. The range below it was stated openly as a hypothesis, since the literature covers it by a large computation. Removing that hypothesis took until 25 November. The threshold was brought down to $10^{13}$ by a tree search over prime factors, the rest was cut into 2{,}502 independent chunks, and the whole evaluation cost about $3.5$ million CPU seconds. Progress on a target like this is easy to overstate: it can look finished after its first hour.
+\subsection*{Grosswald: the quick part and the slow part} \textup{(\repo{grosswald-grh} \cite{r-grosswald-grh})} Here the split was by range. The argument above $2.5\cdot10^{15}$, modelled on a published proof, was assembled 42 minutes after the repository was created. The range below it was stated openly as a hypothesis, since the literature covers it by a large computation. Removing that hypothesis took until 25 November. The threshold was brought down to $10^{13}$ by a tree search over prime factors, the rest was cut into 2{,}502 independent chunks, and the whole evaluation cost about $3.5$ million CPU seconds. Progress on a target like this is easy to overstate: it can look finished after its first hour.
 
-\subsection*{Speiser: when the ranges do not meet} This target asks that a function have no zero in a strip. The first proof, an hour after the start, covered heights above $8$. A second pass sharpened the estimate to $7$, and the method was found to stop near $6.5$. A separate argument handled heights below $2.5$. The band between resisted both. A design note compared three ways to close it, and rejected two because each needed more new Lean than the third. The band was covered by 71{,}223 small cells per half, checked in three minutes, and the theorem was complete three and a half hours after the start. The pieces arrived as separate pull requests.
+\subsection*{Speiser: when the ranges do not meet} \textup{(\repo{speiser-rh} \cite{r-speiser-rh})} This target asks that a function have no zero in a strip. The first proof, an hour after the start, covered heights above $8$. A second pass sharpened the estimate to $7$, and the method was found to stop near $6.5$. A separate argument handled heights below $2.5$. The band between resisted both. A design note compared three ways to close it, and rejected two because each needed more new Lean than the third. The band was covered by 71{,}223 small cells per half, checked in three minutes, and the theorem was complete three and a half hours after the start. The pieces arrived as separate pull requests.
 
-\subsection*{Schoenfeld: ship a weak version, then name the inputs} The first version, 54 minutes in, had the right statement with constants several times larger than the published ones. Two sharpening steps followed. Then the published constant was reduced to five named inputs, each a separate statement: one about zeros and four finite computations. With the theorem already proved from its inputs, they were discharged one at a time through the evening. The last came from a public Lean proof, which we imported with its 216 files. Naming the inputs first meant that each could be worked on without the others.
+\subsection*{Schoenfeld: ship a weak version, then name the inputs} \textup{(\repo{schoenfeld-rh} \cite{r-schoenfeld-rh})} The first version, 54 minutes in, had the right statement with constants several times larger than the published ones. Two sharpening steps followed. Then the published constant was reduced to five named inputs, each a separate statement: one about zeros and four finite computations. With the theorem already proved from its inputs, they were discharged one at a time through the evening. The last came from a public Lean proof, which we imported with its 216 files \cite{rsbounds,ternary,zetalab}. Naming the inputs first meant that each could be worked on without the others.
 
-\subsection*{Lamzouri, Li and Soundararajan: a paper as a ladder} This target was a whole paper. Its theorems were transcribed at the start and proved from the easiest to the hardest over 17 hours, each rung merged on its own. Several rungs were first proved with a weaker constant and replaced later by the paper's, so there was always a finished theorem to fall back on.
+\subsection*{Lamzouri, Li and Soundararajan: a paper as a ladder} \textup{(\repo{lls-grh} \cite{r-lls-grh})} This target was a whole paper. Its theorems were transcribed at the start and proved from the easiest to the hardest over 17 hours, each rung merged on its own. Several rungs were first proved with a weaker constant and replaced later by the paper's, so there was always a finished theorem to fall back on.
 
 \begin{table}[ht]
 \small
@@ -310,13 +329,13 @@ An audit of the RH library put its constants for the second route between $10^4$
 \toprule
 Target & First version & Full version & What took the time\\
 \midrule
-\repo{erdos-985} & 2 gaps named at start & 1 h & one missing general theorem\\
-\repo{grosswald-grh} & 42 min, range assumed & 25 Nov & $3.5\cdot10^6$ CPU seconds\\
-\repo{robin-rh} & 1 h 8 min, range assumed & 24 Nov & sieving to about $10^{13}$\\
-\repo{abelian-erh} & & 58 min & none; scoping had found the parts\\
-\repo{schoenfeld-rh} & 54 min, weaker constants & 14 h 22 min & five named inputs\\
-\repo{speiser-rh} & 1 h 9 min, upper range & 3 h 30 min & the middle band\\
-\repo{lls-grh} & 2 h 55 min, first rungs & 17 h 13 min & ladder of theorems\\
+\repo{erdos-985} \cite{r-erdos-985} & 2 gaps named at start & 1 h & one missing general theorem\\
+\repo{grosswald-grh} \cite{r-grosswald-grh} & 42 min, range assumed & 25 Nov & $3.5\cdot10^6$ CPU seconds\\
+\repo{robin-rh} \cite{r-robin-rh} & 1 h 8 min, range assumed & 24 Nov & sieving to about $10^{13}$\\
+\repo{abelian-erh} \cite{r-abelian-erh} & & 58 min & none; scoping had found the parts\\
+\repo{schoenfeld-rh} \cite{r-schoenfeld-rh} & 54 min, weaker constants & 14 h 22 min & five named inputs\\
+\repo{speiser-rh} \cite{r-speiser-rh} & 1 h 9 min, upper range & 3 h 30 min & the middle band\\
+\repo{lls-grh} \cite{r-lls-grh} & 2 h 55 min, first rungs & 17 h 13 min & ladder of theorems\\
 \bottomrule
 \end{tabular}
 \medskip
@@ -342,13 +361,39 @@ Target & First version & Full version & What took the time\\
 We thank Levent Alp\"oge, the Lean and Mathlib communities, and the authors of the Lean projects credited in each repository. The agents ran on OpenHuman \cite{openhuman}, with GLM models by Z.ai served on GMI Cloud and literature search by Exa. The formal proofs were written by AI agents. Steven Enamakel is the founder of OpenHuman and Christel Buchanan is the founder of Living Brain, two of the systems described here.
 
 \begin{thebibliography}{99}
+\raggedright
 \bibitem{alpoge} L. Alp\"oge, Lean proof of the Riemann hypothesis, announced 20 November 2026, \url{https://alpo.ge/remark.pdf}.
 \bibitem{erdosproblems} T. Bloom, \emph{Erd\H{o}s Problems}, \url{https://www.erdosproblems.com}.
 \bibitem{formalconj} Google DeepMind, \emph{formal-conjectures}, \url{https://github.com/google-deepmind/formal-conjectures}.
 \bibitem{leanfro} Lean FRO and Mathlib Initiative, \emph{Lean verification of the Riemann Hypothesis}, 21 November 2026, \url{https://leanprover-community.github.io/blog/posts/riemann-hypothesis/}.
 \bibitem{livingbrain} \emph{Living Brain}, \url{https://livingbrain.com}.
-\bibitem{openhuman} \emph{OpenHuman}, \url{https://github.com/tinyhumansai/openhuman}.
 \bibitem{rhrepo} \emph{leanprover-community/riemann-hypothesis}, \url{https://github.com/leanprover-community/riemann-hypothesis}.
 \bibitem{sutherland} A. Sutherland, \emph{Verification files for the Lean proof of the Riemann Hypothesis}, \url{https://math.mit.edu/~drew/grh/}.
+\bibitem{openhuman} \emph{OpenHuman}, \url{https://github.com/tinyhumansai/openhuman}.
+\bibitem{rsiralph} \emph{RSI Ralph}, \url{https://github.com/tinyhumansai/rsi-ralph}.
+\bibitem{supermath} \emph{supermath}, \url{https://github.com/tinyhumansai/supermath}.
+\bibitem{superagent} \emph{Math Research Agent}, \url{https://github.com/senamakel/math-superagent}.
+\bibitem{conjectures} \emph{Conjectures: 17 Lean 4 proofs of consequences of the Riemann hypothesis}, \url{https://github.com/ChatAndBuild/conjectures}.
+\bibitem{paper985} S. Enamakel, \emph{Every odd prime has a smaller prime primitive root under GRH: a formalized proof of Erd\H{o}s Problem 985}, 2026, \url{https://github.com/senamakel/erdos-985/tree/main/paper}.
+\bibitem{r-erdos-985} \emph{Erd\H{o}s Problem 985 in Lean}, \url{https://github.com/senamakel/erdos-985}.
+\bibitem{r-lindelof-rh} \emph{The Lindel\"of hypothesis from RH and GRH in Lean}, \url{https://github.com/senamakel/lindelof-rh}.
+\bibitem{r-density-rh} \emph{Zero counting and the density hypothesis in Lean}, \url{https://github.com/senamakel/density-rh}.
+\bibitem{r-grosswald-grh} \emph{Grosswald's conjecture under GRH in Lean}, \url{https://github.com/senamakel/grosswald-grh}.
+\bibitem{r-weinberger-grh} \emph{Euler's idoneal numbers under GRH in Lean}, \url{https://github.com/senamakel/weinberger-grh}.
+\bibitem{r-abelian-erh} \emph{The extended Riemann hypothesis for abelian number fields under GRH in Lean}, \url{https://github.com/senamakel/abelian-erh}.
+\bibitem{r-robin-rh} \emph{Robin's inequality from RH in Lean}, \url{https://github.com/senamakel/robin-rh}.
+\bibitem{r-nicolas-rh} \emph{Nicolas' inequality under RH in Lean}, \url{https://github.com/senamakel/nicolas-rh}.
+\bibitem{r-li-criterion-rh} \emph{Li's criterion from RH in Lean}, \url{https://github.com/senamakel/li-criterion-rh}.
+\bibitem{r-speiser-rh} \emph{Speiser's theorem under RH in Lean}, \url{https://github.com/senamakel/speiser-rh}.
+\bibitem{r-mertens-rh} \emph{Bounds for the Mertens function under RH in Lean}, \url{https://github.com/senamakel/mertens-rh}.
+\bibitem{r-lls-grh} \emph{Lamzouri, Li and Soundararajan's bounds under GRH in Lean}, \url{https://github.com/senamakel/lls-grh}.
+\bibitem{r-bach-sorenson-grh} \emph{Bach and Sorenson's least prime in a residue class under GRH in Lean}, \url{https://github.com/senamakel/bach-sorenson-grh}.
+\bibitem{r-schoenfeld-rh} \emph{Schoenfeld's bounds from RH in Lean}, \url{https://github.com/senamakel/schoenfeld-rh}.
+\bibitem{r-cramer-rh} \emph{Cram\'er's prime-gap and mean-square theorems under RH in Lean}, \url{https://github.com/senamakel/cramer-rh}.
+\bibitem{r-erdos-770} \emph{Erd\H{o}s 770(iii) under GRH in Lean}, \url{https://github.com/senamakel/erdos-770}.
+\bibitem{r-erdos-233} \emph{Selberg's theorems on primes in short intervals under RH in Lean}, \url{https://github.com/senamakel/erdos-233}.
+\bibitem{rsbounds} \emph{RSBounds}, \url{https://github.com/Garald1/RSBounds}.
+\bibitem{ternary} \emph{ternary-goldbach}, \url{https://github.com/calr3/ternary-goldbach}.
+\bibitem{zetalab} \emph{zeta-lab}, \url{https://github.com/teal-sea/zeta-lab}.
 \end{thebibliography}
 \end{document}
